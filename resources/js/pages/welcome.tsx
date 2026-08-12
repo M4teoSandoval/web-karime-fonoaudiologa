@@ -2,7 +2,7 @@ import { Hero } from '@/components/home/hero';
 import { Navbar } from '@/components/navigation/navbar';
 import { Head } from '@inertiajs/react';
 import { Services } from '@/components/home/services';
-
+import {About} from '@/components/home/about';
 export default function Welcome() {
     return (
         <>
@@ -21,6 +21,7 @@ export default function Welcome() {
                 <main>
                     <Hero />
                     <Services />
+                    <About />
                 </main>
             </div>
         </>
