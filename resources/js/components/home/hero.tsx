@@ -300,7 +300,7 @@ export function Hero() {
                         delay: 1.3,
                         duration: 0.6,
                     }}
-                    className="absolute bottom-7 left-1/2 hidden -translate-x-1/2 items-center gap-3 text-[#706a67] md:flex"
+                    className="absolute bottom-16 left-1/2 hidden -translate-x-1/2 items-center gap-3 text-[#706a67] md:flex"
                 >
                     <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Descubre</span>
 
@@ -317,6 +317,17 @@ export function Hero() {
                         <ArrowDown className="size-4 text-[#d99aa8]" />
                     </motion.div>
                 </motion.div>
+            </div>
+
+            {/* Organic transition to Services */}
+            <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-20 overflow-hidden" aria-hidden="true">
+                <div className="absolute -bottom-24 left-[12%] h-48 w-72 rounded-full bg-[#7d8f7a]/10 blur-3xl" />
+
+                <div className="absolute -right-10 -bottom-20 h-44 w-64 rounded-full bg-[#d99aa8]/10 blur-3xl" />
+
+                <svg viewBox="0 0 1440 180" preserveAspectRatio="none" className="absolute right-0 bottom-0 h-full w-full">
+                    <path d="M0 115C190 155 350 160 540 125C760 85 900 35 1110 48C1240 56 1340 82 1440 65V180H0Z" fill="#fcfaf8" />
+                </svg>
             </div>
         </section>
     );

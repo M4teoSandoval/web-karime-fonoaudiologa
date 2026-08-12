@@ -1,6 +1,7 @@
 import { Hero } from '@/components/home/hero';
 import { Navbar } from '@/components/navigation/navbar';
 import { Head } from '@inertiajs/react';
+import { Services } from '@/components/home/services';
 
 export default function Welcome() {
     return (
@@ -19,6 +20,7 @@ export default function Welcome() {
                 <Navbar />
                 <main>
                     <Hero />
+                    <Services />
                 </main>
             </div>
         </>
