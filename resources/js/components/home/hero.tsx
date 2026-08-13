@@ -2,6 +2,9 @@ import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 
+const whatsappUrl =
+    'https://wa.me/573150596654?text=Quisiera%20agendar%20una%20cita.%20Me%20gustar%C3%ADa%20conocer%20la%20disponibilidad%20y%20recibir%20m%C3%A1s%20informaci%C3%B3n.';
+
 const fadeUp = {
     hidden: {
         opacity: 0,
@@ -128,13 +131,15 @@ export function Hero() {
                         {/* Actions */}
                         <motion.div variants={fadeUp} className="mt-9 flex flex-wrap items-center gap-4">
                             {/* Primary */}
-                            <Link
-                                href="/#contacto"
+                            <a
+                                href={whatsappUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="group inline-flex items-center rounded-full bg-[#7d8f7a] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(125,143,122,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#6d7f6a]"
                             >
                                 Agendar cita
                                 <ArrowUpRight className="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                            </Link>
+                            </a>
 
                             {/* Secondary */}
                             <Link
