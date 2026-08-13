@@ -15,7 +15,7 @@ export function Navbar() {
     const { auth } = usePage<SharedData>().props;
 
     return (
-        <header className="fixed inset-x-0 top-0 z-50">
+        <header className="fixed inset-x-0 top-0 z-50 ">
             <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
                 <div className="border border-[#eadedf]/80 bg-[#fcf9f7]/90 shadow-[0_8px_30px_rgba(85,72,74,0.06)] backdrop-blur-xl">
                     <div className="flex h-[72px] items-center justify-between px-5 sm:px-7">
