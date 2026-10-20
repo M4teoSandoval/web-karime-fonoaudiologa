@@ -8,11 +8,9 @@ const navItems = [
     { title: 'Inicio', href: '/#inicio' },
     { title: 'Servicios', href: '/#servicios' },
     { title: 'Sobre mí', href: '/#sobre-mi' },
+    { title: 'Agenda', href: '/#agenda' },
     { title: 'Contacto', href: '/#contacto' },
 ];
-
-const whatsappUrl =
-    'https://wa.me/573150596654?text=Quisiera%20agendar%20una%20cita.%20Me%20gustar%C3%ADa%20conocer%20la%20disponibilidad%20y%20recibir%20m%C3%A1s%20informaci%C3%B3n.';
 
 export function Navbar() {
     const { auth } = usePage<SharedData>().props;
@@ -61,18 +59,18 @@ export function Navbar() {
                                     asChild
                                     className="rounded-full bg-[#7d8f7a] px-5 text-white shadow-[0_8px_20px_rgba(125,143,122,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#6f816c] hover:shadow-[0_10px_25px_rgba(125,143,122,0.24)]"
                                 >
-                                    <Link href={route('dashboard')}>Dashboard</Link>
+                                    <Link href={auth.user.role === 'admin' ? route('admin.dashboard') : route('dashboard')}>
+                                        {auth.user.role === 'admin' ? 'Panel' : 'Dashboard'}
+                                    </Link>
                                 </Button>
                             ) : (
-                                <a
-                                    href={whatsappUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <Link
+                                    href="/#agenda"
                                     className="group inline-flex h-11 items-center rounded-full bg-[#d99aa8] px-5 text-sm font-bold text-white shadow-[0_8px_24px_rgba(217,154,168,0.20)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#c98796] hover:shadow-[0_12px_28px_rgba(217,154,168,0.28)]"
                                 >
                                     Agendar cita
                                     <ArrowUpRight className="ml-1.5 size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                                </a>
+                                </Link>
                             )}
                         </div>
 
@@ -118,18 +116,18 @@ export function Navbar() {
                                     <div className="mt-auto">
                                         {auth.user ? (
                                             <Button asChild className="w-full rounded-full bg-[#7d8f7a] py-6 text-white hover:bg-[#6f816c]">
-                                                <Link href={route('dashboard')}>Dashboard</Link>
+                                                <Link href={auth.user.role === 'admin' ? route('admin.dashboard') : route('dashboard')}>
+                                                    {auth.user.role === 'admin' ? 'Panel' : 'Dashboard'}
+                                                </Link>
                                             </Button>
                                         ) : (
-                                            <a
-                                                href={whatsappUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
+                                            <Link
+                                                href="/#agenda"
                                                 className="flex w-full items-center justify-center rounded-full bg-[#d99aa8] py-3.5 text-sm font-bold text-white shadow-[0_10px_25px_rgba(217,154,168,0.20)] transition-all duration-300 hover:bg-[#c98796]"
                                             >
                                                 Agendar cita
                                                 <ArrowUpRight className="ml-2 size-4" />
-                                            </a>
+                                            </Link>
                                         )}
 
                                         <p className="mt-4 text-center text-xs leading-5 text-[#706a67]">

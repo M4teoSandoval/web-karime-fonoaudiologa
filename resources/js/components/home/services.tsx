@@ -1,74 +1,7 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { services } from '@/data/services';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Ear, MessageCircle, Mic2, Orbit, Speech, Utensils } from 'lucide-react';
-
-const services = [
-    {
-        title: 'Limpieza de Oídos',
-        shortDescription:
-            'Procedimiento de higiene y limpieza del conducto auditivo externo para la eliminación de acumulación de cerumen, realizado de manera segura y profesional.',
-        details: [],
-        icon: Ear,
-        color: 'sage',
-    },
-    {
-        title: 'Rehabilitación Vestibular',
-        shortDescription:
-            'Evaluación e intervención dirigida a personas con alteraciones del equilibrio y síntomas relacionados con el sistema vestibular.',
-        details: [
-            'Mareos y vértigo.',
-            'Inestabilidad y alteraciones del equilibrio.',
-            'Dificultades relacionadas con el sistema vestibular.',
-            'Ejercicios de rehabilitación vestibular individualizados.',
-        ],
-        icon: Orbit,
-        color: 'pink',
-    },
-    {
-        title: 'Terapia de Voz',
-        shortDescription: 'Intervención dirigida a personas que presentan dificultades en la calidad, uso o resistencia de la voz.',
-        details: ['Disfonías.', 'Fatiga vocal.', 'Alteraciones de la calidad de la voz.', 'Educación y cuidado de la voz.'],
-        icon: Mic2,
-        color: 'sage',
-    },
-    {
-        title: 'Terapia de Lenguaje',
-        shortDescription: 'Atención dirigida a niños, adolescentes y adultos con dificultades en la comprensión y expresión del lenguaje.',
-        details: [
-            'Retrasos en la adquisición del lenguaje.',
-            'Dificultades para comprender o expresar ideas.',
-            'Problemas en vocabulario, estructuración de frases y comunicación.',
-            'Alteraciones del lenguaje asociadas a condiciones neurológicas.',
-        ],
-        icon: MessageCircle,
-        color: 'pink',
-    },
-    {
-        title: 'Terapia de Habla',
-        shortDescription: 'Intervención para personas que presentan dificultades en la producción y claridad del habla.',
-        details: [
-            'Dificultades en la articulación de sonidos.',
-            'Alteraciones de la fluidez, como disfemia (tartamudez).',
-            'Dificultades en la inteligibilidad del habla.',
-            'Rehabilitación de alteraciones del habla en adultos.',
-        ],
-        icon: Speech,
-        color: 'sage',
-    },
-    {
-        title: 'Terapia de Deglución',
-        shortDescription: 'Evaluación e intervención de dificultades para masticar y tragar alimentos, líquidos o saliva.',
-        details: [
-            'Dificultades para deglutir.',
-            'Alteraciones de la masticación.',
-            'Tos o atragantamiento durante las comidas.',
-            'Cambios en la alimentación y seguridad al tragar.',
-            'Rehabilitación de la deglución en adultos y población pediátrica.',
-        ],
-        icon: Utensils,
-        color: 'pink',
-    },
-];
+import { ArrowUpRight } from 'lucide-react';
 
 const containerVariants = {
     hidden: {},
@@ -363,17 +296,25 @@ export function Services() {
                                         )}
 
                                         <div className="mt-7 border-t border-[#373432]/8 pt-6">
-                                            <a
-                                                href="/#contacto"
-                                                className={`group inline-flex items-center rounded-full px-5 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5 ${
-                                                    isPink
-                                                        ? 'bg-[#d99aa8] shadow-[0_10px_25px_rgba(217,154,168,0.2)] hover:bg-[#c98796]'
-                                                        : 'bg-[#7d8f7a] shadow-[0_10px_25px_rgba(125,143,122,0.2)] hover:bg-[#6f826c]'
-                                                }`}
-                                            >
-                                                Agendar cita
-                                                <ArrowUpRight className="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                                            </a>
+                                            <DialogClose asChild>
+                                                <a
+                                                    href="#agenda"
+                                                    onClick={(e) => {
+                                                        // Dejar que DialogClose cierre primero; luego scrollear
+                                                        setTimeout(() => {
+                                                            document.getElementById('agenda')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                        }, 200);
+                                                    }}
+                                                    className={`group inline-flex items-center rounded-full px-5 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5 ${
+                                                        isPink
+                                                            ? 'bg-[#d99aa8] shadow-[0_10px_25px_rgba(217,154,168,0.2)] hover:bg-[#c98796]'
+                                                            : 'bg-[#7d8f7a] shadow-[0_10px_25px_rgba(125,143,122,0.2)] hover:bg-[#6f826c]'
+                                                    }`}
+                                                    >
+                                                    Agendar cita
+                                                    <ArrowUpRight className="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                                </a>
+                                            </DialogClose>
                                         </div>
                                     </DialogContent>
                                 </Dialog>

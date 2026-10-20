@@ -43,17 +43,11 @@ export function About() {
                     >
                         {/* Main photo */}
                         <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] bg-[#ead8da]">
-                            {/* FOTO PRINCIPAL — agregar después */}
-                            <div className="flex h-full w-full items-center justify-center">
-                                <div className="text-center">
-                                    <span className="text-sm font-bold tracking-[0.15em] text-[#7d8f7a] uppercase">
-                                        Foto de Karime
-                                    </span>
-                                    <p className="mt-2 text-xs text-[#706a67]">
-                                        Foto profesional
-                                    </p>
-                                </div>
-                            </div>
+                            <img
+                                src="/images/karime/karime_foto_frontal_fondoneutro.jpeg"
+                                alt="Karime Sandoval, fonoaudióloga y audióloga"
+                                className="h-full w-full object-cover"
+                            />
                         </div>
 
                         {/* Decorative frame */}
@@ -70,12 +64,11 @@ export function About() {
                             }}
                             className="absolute -right-4 -bottom-8 flex aspect-square w-32 items-center justify-center overflow-hidden rounded-3xl border-8 border-[#fcf9f7] bg-[#f4e7e8] shadow-[0_15px_40px_rgba(85,72,74,0.10)] sm:-right-8 sm:w-40"
                         >
-                            {/* FOTO SECUNDARIA — agregar después */}
-                            <div className="px-3 text-center">
-                                <span className="text-[10px] font-bold tracking-[0.12em] text-[#d99aa8] uppercase">
-                                    Segunda foto
-                                </span>
-                            </div>
+                            <img
+                                src="/images/karime/foto_karime_frente_enconsultorio.jpeg"
+                                alt="Karime Sandoval en su consultorio"
+                                className="h-full w-full object-cover"
+                            />
                         </motion.div>
 
                         {/* Small decorative circle */}

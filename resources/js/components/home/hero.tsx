@@ -1,9 +1,9 @@
+import { defaultWhatsAppUrl } from '@/lib/whatsapp';
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 
-const whatsappUrl =
-    'https://wa.me/573150596654?text=Quisiera%20agendar%20una%20cita.%20Me%20gustar%C3%ADa%20conocer%20la%20disponibilidad%20y%20recibir%20m%C3%A1s%20informaci%C3%B3n.';
+const whatsappUrl = defaultWhatsAppUrl;
 
 const fadeUp = {
     hidden: {
@@ -132,8 +132,7 @@ export function Hero() {
                         <motion.div variants={fadeUp} className="mt-9 flex flex-wrap items-center gap-4">
                             {/* Primary */}
                             <a
-                                href={whatsappUrl}
-                                target="_blank"
+                                href="/#agenda"
                                 rel="noopener noreferrer"
                                 className="group inline-flex items-center rounded-full bg-[#7d8f7a] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(125,143,122,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#6d7f6a]"
                             >
@@ -206,7 +205,7 @@ export function Hero() {
                         {/* Main image frame */}
                         <div className="relative aspect-[4/5] overflow-hidden rounded-[45%_45%_24%_24%] bg-[#f4e7e8]">
                             <img
-                                src="/images/karime/karime-profesional.png"
+                                src="/images/karime/karime_profesional.jpeg"
                                 alt="Karime Sandoval, fonoaudióloga y audióloga"
                                 className="h-full w-full object-cover"
                             />

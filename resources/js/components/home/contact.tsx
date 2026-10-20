@@ -1,3 +1,4 @@
+import { defaultWhatsAppUrl } from '@/lib/whatsapp';
 import { motion } from 'framer-motion';
 import {
     ArrowUpRight,
@@ -5,6 +6,8 @@ import {
     MapPin,
     MessageCircle,
 } from 'lucide-react';
+
+const whatsappUrl = defaultWhatsAppUrl;
 
 const fadeUp = {
     hidden: {
@@ -176,20 +179,11 @@ export function Contact() {
                     >
                         {/* Main office photo */}
                         <div className="relative aspect-[4/3] overflow-hidden rounded-[32px] bg-[#ead8da]">
-                            {/* FOTO PRINCIPAL DEL CONSULTORIO */}
-                            <div className="flex h-full w-full items-center justify-center">
-                                <div className="text-center">
-                                    <MapPin className="mx-auto size-8 text-[#7d8f7a]/50" />
-
-                                    <p className="mt-3 text-sm font-bold tracking-[0.12em] text-[#7d8f7a] uppercase">
-                                        Foto del consultorio
-                                    </p>
-
-                                    <p className="mt-1 text-xs text-[#706a67]">
-                                        Agregar después
-                                    </p>
-                                </div>
-                            </div>
+                            <img
+                                src="/images/foto_consultorio.png"
+                                alt="Consultorio de Karime Sandoval, fonoaudióloga"
+                                className="h-full w-full object-cover"
+                            />
                         </div>
 
                         {/* Secondary photo */}
@@ -203,12 +197,11 @@ export function Contact() {
                             }}
                             className="absolute -bottom-10 -left-5 aspect-[4/3] w-44 overflow-hidden rounded-3xl border-8 border-[#f4eee9] bg-[#f4e7e8] shadow-[0_18px_40px_rgba(85,72,74,0.10)] sm:-left-8 sm:w-52"
                         >
-                            {/* FOTO SECUNDARIA DEL CONSULTORIO */}
-                            <div className="flex h-full w-full items-center justify-center px-4 text-center">
-                                <p className="text-[10px] font-bold tracking-[0.12em] text-[#d99aa8] uppercase">
-                                    Segunda foto
-                                </p>
-                            </div>
+                            <img
+                                src="/images/foto_inauguracion_consultorio.png"
+                                alt="Inauguración del consultorio de Karime Sandoval"
+                                className="h-full w-full object-cover"
+                            />
                         </motion.div>
 
                         {/* Sage floating badge */}
