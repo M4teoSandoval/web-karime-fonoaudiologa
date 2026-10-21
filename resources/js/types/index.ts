@@ -45,6 +45,13 @@ export interface SiteProfessional {
     social_image: string;
 }
 
+export interface SiteFooter {
+    copyright_holder: string;
+    location: string;
+    developer_url: string;
+    developer_label: string;
+}
+
 export interface SiteConfig {
     url: string;
     name: string;
@@ -52,6 +59,7 @@ export interface SiteConfig {
     maps_url: string;
     seo: SiteSeo;
     professional: SiteProfessional;
+    footer: SiteFooter;
 }
 
 export interface SharedData {

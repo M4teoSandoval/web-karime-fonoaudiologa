@@ -209,3 +209,19 @@ test('la dirección publicada coincide con la ficha de Google', function () {
         ->toBe('Carrera 9A #10A-02, local esquinero, 2do piso')
         ->toContain('Carrera 9A #10A-02');
 });
+
+test('el pie de página comparte sus datos con el frontend', function () {
+    // La ubicación del pie de página debe coincidir con la del consultorio.
+    expect(config('site.footer.location'))
+        ->toBe(config('site.professional.locality').', '.config('site.professional.region'));
+
+    $this->get('/')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('welcome')
+            ->where('site.footer.copyright_holder', 'Karime Sandoval')
+            ->where('site.footer.location', 'Santa Rosa del Sur, Bolívar')
+            ->where('site.footer.developer_url', 'https://github.com/M4teoSandoval')
+            ->where('site.footer.developer_label', 'github.com/M4teoSandoval')
+        );
+});

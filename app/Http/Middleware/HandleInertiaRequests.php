@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                 'maps_url' => config('site.maps_url'),
                 'seo' => config('site.seo'),
                 'professional' => config('site.professional'),
+                'footer' => config('site.footer'),
             ],
             'flash' => [
                 'type' => $request->session()->get('flash.type'),

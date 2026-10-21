@@ -47,4 +47,16 @@ return [
         // Imagen para vistas previas (Open Graph): formato con mejor soporte.
         'social_image' => '/images/karime/karime_profesional.jpeg',
     ],
+
+    /*
+        Contenido del pie de página. Se mantiene aquí para poder corregirlo
+        (derechos de autor, ubicación, crédito de desarrollo) sin tocar el
+        componente de React.
+    */
+    'footer' => [
+        'copyright_holder' => 'Karime Sandoval',
+        'location' => 'Santa Rosa del Sur, Bolívar',
+        'developer_url' => 'https://github.com/M4teoSandoval',
+        'developer_label' => 'github.com/M4teoSandoval',
+    ],
 ];
