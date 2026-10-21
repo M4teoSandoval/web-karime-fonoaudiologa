@@ -1,7 +1,7 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { type AgendaDay } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { Ban, CalendarX, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Ban, CalendarX, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 
 interface AgendaProps {
     weekStart: string;
@@ -15,21 +15,37 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
         router.get('/admin/agenda', { start }, { preserveState: true, preserveScroll: true });
     };
 
+    // "Hoy" según la zona horaria del navegador; el backend calcula la semana con America/Bogota.
     const today = new Date();
     const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const isCurrentWeek = weekStart <= todayIso && todayIso < nextWeekStart;
 
     return (
         <AdminLayout title="Agenda">
             {/* Week navigation */}
-            <div className="mb-6 flex items-center justify-between gap-4">
-                <button
-                    type="button"
-                    onClick={() => navigateToWeek(previousWeekStart)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#eadedf] bg-white px-4 py-2 text-sm font-semibold text-[#706a67] transition-colors hover:border-[#d99aa8] hover:text-[#d99aa8]"
-                >
-                    <ChevronLeft className="size-4" />
-                    Semana anterior
-                </button>
+            <div className="mb-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-between sm:gap-4">
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => navigateToWeek(previousWeekStart)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#eadedf] bg-white px-4 py-2 text-sm font-semibold text-[#706a67] transition-colors hover:border-[#d99aa8] hover:text-[#d99aa8]"
+                    >
+                        <ChevronLeft className="size-4" />
+                        <span className="sm:hidden">Anterior</span>
+                        <span className="hidden sm:inline">Semana anterior</span>
+                    </button>
+
+                    {!isCurrentWeek && (
+                        <button
+                            type="button"
+                            onClick={() => router.get('/admin/agenda', {}, { preserveState: true, preserveScroll: true })}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-[#7d8f7a] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#6f826c]"
+                        >
+                            <CalendarDays className="size-4" />
+                            Volver a hoy
+                        </button>
+                    )}
+                </div>
 
                 <p className="text-sm font-bold text-[#373432]">
                     Semana del {weekStart.split('-').reverse().join('/')}
@@ -40,7 +56,8 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
                     onClick={() => navigateToWeek(nextWeekStart)}
                     className="inline-flex items-center gap-1.5 rounded-full border border-[#eadedf] bg-white px-4 py-2 text-sm font-semibold text-[#706a67] transition-colors hover:border-[#d99aa8] hover:text-[#d99aa8]"
                 >
-                    Semana siguiente
+                    <span className="sm:hidden">Siguiente</span>
+                    <span className="hidden sm:inline">Semana siguiente</span>
                     <ChevronRight className="size-4" />
                 </button>
             </div>
@@ -64,10 +81,14 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
                             </div>
 
                             {/* Schedule */}
-                            {day.schedule ? (
-                                <p className="mt-3 text-xs font-semibold text-[#7d8f7a]">
-                                    Jornada: {day.schedule.start_time.slice(0, 5)} – {day.schedule.end_time.slice(0, 5)}
-                                </p>
+                            {day.intervals.length > 0 ? (
+                                <ul className="mt-3 space-y-1">
+                                    {day.intervals.map((interval) => (
+                                        <li key={`${interval.start_time}-${interval.end_time}`} className="text-xs font-semibold text-[#7d8f7a]">
+                                            Jornada: {interval.start_time.slice(0, 5)} – {interval.end_time.slice(0, 5)}
+                                        </li>
+                                    ))}
+                                </ul>
                             ) : (
                                 <p className="mt-3 text-xs font-semibold text-[#706a67]">Sin jornada configurada</p>
                             )}

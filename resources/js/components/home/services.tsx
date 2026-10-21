@@ -22,7 +22,7 @@ const itemVariants = {
         y: 0,
         transition: {
             duration: 0.6,
-            ease: [0.22, 1, 0.36, 1],
+            ease: [0.22, 1, 0.36, 1] as const,
         },
     },
 };
@@ -57,7 +57,7 @@ export function Services() {
                     initial={{ opacity: 0, x: 30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] as const }}
                     className="absolute top-[80px] -right-[190px] hidden h-[560px] w-[560px] text-[#7d8f7a]/[0.09] lg:block"
                     viewBox="0 0 400 400"
                     fill="none"
@@ -94,7 +94,7 @@ export function Services() {
                     transition={{
                         duration: 1,
                         delay: 0.15,
-                        ease: [0.22, 1, 0.36, 1],
+                        ease: [0.22, 1, 0.36, 1] as const,
                     }}
                     className="absolute bottom-[90px] -left-[80px] h-[220px] w-[420px] text-[#d99aa8]/[0.09]"
                     viewBox="0 0 420 220"

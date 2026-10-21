@@ -40,6 +40,8 @@ class AppointmentRequest extends Model
         'Limpieza de Oídos',
         'Rehabilitación Vestibular',
         'Terapia de Voz',
+        'Protectores auditivos',
+        'Evaluación e Intervención en Lectoescritura',
     ];
 
     /**

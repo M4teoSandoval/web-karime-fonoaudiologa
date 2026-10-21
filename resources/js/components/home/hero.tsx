@@ -15,7 +15,7 @@ const fadeUp = {
         y: 0,
         transition: {
             duration: 0.7,
-            ease: [0.22, 1, 0.36, 1],
+            ease: [0.22, 1, 0.36, 1] as const,
         },
     },
 };
@@ -50,7 +50,7 @@ export function Hero() {
                 transition={{
                     duration: 1.2,
                     delay: 0.2,
-                    ease: [0.22, 1, 0.36, 1],
+                    ease: [0.22, 1, 0.36, 1] as const,
                 }}
                 className="pointer-events-none absolute top-[18%] -right-20 hidden h-[280px] w-[180px] rounded-[50%] bg-[#d99aa8]/[0.07] blur-[1px] lg:block"
             />
@@ -62,7 +62,7 @@ export function Hero() {
                 transition={{
                     duration: 1.2,
                     delay: 0.35,
-                    ease: [0.22, 1, 0.36, 1],
+                    ease: [0.22, 1, 0.36, 1] as const,
                 }}
                 className="pointer-events-none absolute -bottom-16 left-[18%] hidden h-[220px] w-[130px] rounded-[50%] bg-[#7d8f7a]/[0.06] blur-[1px] lg:block"
             />
@@ -184,7 +184,7 @@ export function Hero() {
                         transition={{
                             duration: 0.9,
                             delay: 0.15,
-                            ease: [0.22, 1, 0.36, 1],
+                            ease: [0.22, 1, 0.36, 1] as const,
                         }}
                         className="relative mx-auto w-full max-w-[520px]"
                     >
@@ -207,6 +207,10 @@ export function Hero() {
                             <img
                                 src="/images/karime/karime_profesional.jpeg"
                                 alt="Karime Sandoval, fonoaudióloga y audióloga"
+                                width={1400}
+                                height={1867}
+                                fetchPriority="high"
+                                decoding="async"
                                 className="h-full w-full object-cover"
                             />
 

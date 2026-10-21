@@ -36,55 +36,57 @@ class AvailabilityService
             return [];
         }
 
-        // 1. Jornada habitual de ese día de la semana.
-        /** @var WorkSchedule|null $schedule */
-        $schedule = WorkSchedule::query()
-            ->where('day_of_week', (int) $day->dayOfWeek)
-            ->where('is_active', true)
-            ->first();
+        // 1. Jornadas configuradas para ese día de la semana. Un mismo día
+        //    puede tener varios intervalos (mañana y tarde), separados por
+        //    pausas en las que no se genera disponibilidad.
+        /** @var list<WorkSchedule> $intervals */
+        $intervals = WorkSchedule::query()->forDay((int) $day->dayOfWeek)->get();
 
-        if ($schedule === null) {
+        if ($intervals->isEmpty()) {
             return [];
         }
 
-        $dayStart = CarbonImmutable::parse($schedule->start_time, $day->timezone)->setDate($day->year, $day->month, $day->day);
-        $dayEnd = CarbonImmutable::parse($schedule->end_time, $day->timezone)->setDate($day->year, $day->month, $day->day);
+        // 2. Bloqueos de Karime y citas confirmadas para ese día.
+        $unavailable = array_merge($this->blockedIntervals($day), $this->busyIntervals($day, $excludeRequestId));
 
-        if (! $dayEnd->isAfter($dayStart)) {
-            return [];
-        }
-
-        // 2. Bloqueos de Karime para ese día.
-        $blockedTimes = $this->blockedIntervals($day);
-
-        // 3. Citas confirmadas que ocupan ese día.
-        $busyTimes = $this->busyIntervals($day, $excludeRequestId);
-
-        $intervals = array_merge($blockedTimes, $busyTimes);
-
-        // 4. Generar espacios candidatos y filtrar los superpuestos.
+        // 3. Generar espacios candidatos dentro de cada intervalo y filtrar
+        //    los que se solapen con bloqueos o citas.
         $slots = [];
-        $cursor = $dayStart;
-        $latestStart = $dayEnd->subMinutes($durationMinutes);
 
-        while ($cursor->lessThanOrEqualTo($latestStart)) {
-            $slotEnd = $cursor->addMinutes($durationMinutes);
+        foreach ($intervals as $interval) {
+            $intervalStart = $this->intervalBoundary($interval->start_time, $day);
+            $intervalEnd = $this->intervalBoundary($interval->end_time, $day);
 
-            if (! $this->overlapsAny($cursor, $slotEnd, $intervals)) {
-                $slots[] = [
-                    'start' => $cursor->format('Y-m-d H:i:s'),
-                    'end' => $slotEnd->format('Y-m-d H:i:s'),
-                ];
+            if ($intervalEnd->lessThanOrEqualTo($intervalStart)) {
+                continue;
             }
 
-            $cursor = $cursor->addMinutes(self::SLOT_GRANULARITY_MINUTES);
+            $cursor = $intervalStart;
+            $latestStart = $intervalEnd->subMinutes($durationMinutes);
+
+            while ($cursor->lessThanOrEqualTo($latestStart)) {
+                $slotEnd = $cursor->addMinutes($durationMinutes);
+
+                if (! $this->overlapsAny($cursor, $slotEnd, $unavailable)) {
+                    $slots[] = [
+                        'start' => $cursor->format('Y-m-d H:i:s'),
+                        'end' => $slotEnd->format('Y-m-d H:i:s'),
+                    ];
+                }
+
+                $cursor = $cursor->addMinutes(self::SLOT_GRANULARITY_MINUTES);
+            }
         }
+
+        usort($slots, fn (array $a, array $b) => strcmp($a['start'], $b['start']));
 
         return $slots;
     }
 
     /**
      * Verifica si un horario puntual está realmente disponible.
+     * La cita debe caber completa dentro de UN intervalo de trabajo:
+     * nunca puede cruzar una pausa ni salirse de la jornada.
      */
     public function isSlotAvailable(string $start, int $durationMinutes, ?int $excludeRequestId = null): bool
     {
@@ -92,29 +94,37 @@ class AvailabilityService
         $endAt = $startAt->addMinutes($durationMinutes);
         $day = $startAt->startOfDay();
 
-        /** @var WorkSchedule|null $schedule */
-        $schedule = WorkSchedule::query()
-            ->where('day_of_week', (int) $day->dayOfWeek)
-            ->where('is_active', true)
-            ->first();
+        /** @var list<WorkSchedule> $intervals */
+        $intervals = WorkSchedule::query()->forDay((int) $day->dayOfWeek)->get();
 
-        if ($schedule === null) {
+        if ($intervals->isEmpty()) {
             return false;
         }
 
-        $dayStart = CarbonImmutable::parse($schedule->start_time)->setDate($day->year, $day->month, $day->day);
-        $dayEnd = CarbonImmutable::parse($schedule->end_time)->setDate($day->year, $day->month, $day->day);
+        $fitsInsideAnInterval = $intervals->contains(function (WorkSchedule $interval) use ($day, $startAt, $endAt) {
+            $intervalStart = $this->intervalBoundary($interval->start_time, $day);
+            $intervalEnd = $this->intervalBoundary($interval->end_time, $day);
 
-        if ($startAt->lessThan($dayStart) || $endAt->greaterThan($dayEnd)) {
+            return $startAt->greaterThanOrEqualTo($intervalStart) && $endAt->lessThanOrEqualTo($intervalEnd);
+        });
+
+        if (! $fitsInsideAnInterval) {
             return false;
         }
 
-        $intervals = array_merge(
-            $this->blockedIntervals($day),
-            $this->busyIntervals($day, $excludeRequestId),
-        );
+        $unavailable = array_merge($this->blockedIntervals($day), $this->busyIntervals($day, $excludeRequestId));
 
-        return ! $this->overlapsAny($startAt, $endAt, $intervals);
+        return ! $this->overlapsAny($startAt, $endAt, $unavailable);
+    }
+
+    /**
+     * Combina la hora de un intervalo de trabajo con la fecha del día
+     * solicitado para obtener un CarbonImmutable completo.
+     */
+    private function intervalBoundary(string $time, CarbonImmutable $day): CarbonImmutable
+    {
+        return CarbonImmutable::parse($time, $day->timezone)
+            ->setDate($day->year, $day->month, $day->day);
     }
 
     /**

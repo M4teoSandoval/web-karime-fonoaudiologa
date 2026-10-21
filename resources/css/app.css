@@ -53,10 +53,36 @@
         scroll-behavior: smooth;
     }
 
+    /* Respeta a las personas que prefieren menos movimiento. */
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+    }
+
     body {
         @apply bg-background text-foreground antialiased;
         font-family: 'Dhyana', ui-sans-serif, system-ui, sans-serif;
     }
+}
+
+/* =========================================================
+   BRAND FONT — DANCING SCRIPT (autoalojada)
+   ---------------------------------------------------------
+   El nombre "Karime Sandoval" usa font-brand (Dancing Script).
+   Antes la fuente nunca se descargaba: en iPhone Safari el
+   navegador caía a una cursiva del sistema que no correspondía
+   al diseño. Ahora se sirve desde /public/fonts para que el
+   navbar se vea igual en computador y en móvil.
+   ========================================================= */
+
+@font-face {
+    font-family: 'Dancing Script';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('/fonts/dancing-script.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* =========================================================

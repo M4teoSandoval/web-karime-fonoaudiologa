@@ -13,7 +13,8 @@ interface ResetPasswordProps {
     email: string;
 }
 
-interface ResetPasswordForm {
+// Type alias (no interface) para cumplir con la restricción FormDataType de Inertia.
+type ResetPasswordForm = {
     token: string;
     email: string;
     password: string;

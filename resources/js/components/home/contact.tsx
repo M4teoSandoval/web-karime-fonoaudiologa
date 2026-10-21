@@ -19,7 +19,7 @@ const fadeUp = {
         y: 0,
         transition: {
             duration: 0.7,
-            ease: [0.22, 1, 0.36, 1],
+            ease: [0.22, 1, 0.36, 1] as const,
         },
     },
 };
@@ -173,15 +173,19 @@ export function Contact() {
                         viewport={{ once: true, amount: 0.2 }}
                         transition={{
                             duration: 0.8,
-                            ease: [0.22, 1, 0.36, 1],
+                            ease: [0.22, 1, 0.36, 1] as const,
                         }}
                         className="relative mx-auto w-full max-w-[580px]"
                     >
                         {/* Main office photo */}
                         <div className="relative aspect-[4/3] overflow-hidden rounded-[32px] bg-[#ead8da]">
                             <img
-                                src="/images/foto_consultorio.png"
+                                src="/images/foto_consultorio.jpg"
                                 alt="Consultorio de Karime Sandoval, fonoaudióloga"
+                                width={941}
+                                height={1672}
+                                loading="lazy"
+                                decoding="async"
                                 className="h-full w-full object-cover"
                             />
                         </div>
@@ -198,8 +202,12 @@ export function Contact() {
                             className="absolute -bottom-10 -left-5 aspect-[4/3] w-44 overflow-hidden rounded-3xl border-8 border-[#f4eee9] bg-[#f4e7e8] shadow-[0_18px_40px_rgba(85,72,74,0.10)] sm:-left-8 sm:w-52"
                         >
                             <img
-                                src="/images/foto_inauguracion_consultorio.png"
+                                src="/images/foto_inauguracion_consultorio.jpg"
                                 alt="Inauguración del consultorio de Karime Sandoval"
+                                width={851}
+                                height={1849}
+                                loading="lazy"
+                                decoding="async"
                                 className="h-full w-full object-cover"
                             />
                         </motion.div>

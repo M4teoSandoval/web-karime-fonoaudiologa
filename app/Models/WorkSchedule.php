@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class WorkSchedule extends Model
 {
@@ -29,6 +30,16 @@ class WorkSchedule extends Model
             'day_of_week' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Scope: intervalos activos de un día de la semana, ordenados por hora.
+     */
+    public function scopeForDay(Builder $query, int $dayOfWeek): Builder
+    {
+        return $query->where('day_of_week', $dayOfWeek)
+            ->where('is_active', true)
+            ->orderBy('start_time');
     }
 
     /**

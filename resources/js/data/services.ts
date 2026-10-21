@@ -1,4 +1,4 @@
-import { Ear, MessageCircle, Mic2, Orbit, Speech, Utensils, type LucideIcon } from 'lucide-react';
+import { BookOpenText, Ear, Headphones, MessageCircle, Mic2, Orbit, Speech, Utensils, type LucideIcon } from 'lucide-react';
 
 export type ServiceColor = 'sage' | 'pink';
 
@@ -78,6 +78,32 @@ export const services: Service[] = [
             'Rehabilitación de la deglución en adultos y población pediátrica.',
         ],
         icon: Utensils,
+        color: 'pink',
+    },
+    {
+        title: 'Protectores auditivos',
+        shortDescription:
+            'Protectores auditivos elaborados a la medida de tus oídos para brindar comodidad y protección según tus necesidades. Ideales para diferentes actividades, como exposición al ruido, descanso, contacto con el agua y viajes en avión, según el tipo de protector.',
+        details: [
+            'Elaborados a la medida de tus oídos.',
+            'Comodidad y protección según tus necesidades.',
+            'Exposición al ruido.',
+            'Descanso, contacto con el agua y viajes en avión, según el tipo de protector.',
+        ],
+        icon: Headphones,
+        color: 'sage',
+    },
+    {
+        title: 'Evaluación e Intervención en Lectoescritura',
+        shortDescription:
+            'Dirigida a niños que presentan dificultades para aprender a leer y escribir, reconocer letras y sonidos, formar palabras, leer con fluidez o comprender textos. A través de la evaluación e intervención fonoaudiológica, fortalecemos las habilidades del lenguaje necesarias para el aprendizaje.',
+        details: [
+            'Dificultades para aprender a leer y escribir.',
+            'Reconocimiento de letras y sonidos.',
+            'Formación de palabras y lectura con fluidez.',
+            'Comprensión de textos.',
+        ],
+        icon: BookOpenText,
         color: 'pink',
     },
 ];

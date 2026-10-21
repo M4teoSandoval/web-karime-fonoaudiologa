@@ -10,7 +10,7 @@ const fadeUp = {
         y: 0,
         transition: {
             duration: 0.7,
-            ease: [0.22, 1, 0.36, 1],
+            ease: [0.22, 1, 0.36, 1] as const,
         },
     },
 };
@@ -37,7 +37,7 @@ export function About() {
                         viewport={{ once: true, amount: 0.2 }}
                         transition={{
                             duration: 0.8,
-                            ease: [0.22, 1, 0.36, 1],
+                            ease: [0.22, 1, 0.36, 1] as const,
                         }}
                         className="relative mx-auto w-full max-w-[500px]"
                     >
@@ -46,6 +46,10 @@ export function About() {
                             <img
                                 src="/images/karime/karime_foto_frontal_fondoneutro.jpeg"
                                 alt="Karime Sandoval, fonoaudióloga y audióloga"
+                                width={800}
+                                height={1000}
+                                loading="lazy"
+                                decoding="async"
                                 className="h-full w-full object-cover"
                             />
                         </div>
@@ -67,6 +71,10 @@ export function About() {
                             <img
                                 src="/images/karime/foto_karime_frente_enconsultorio.jpeg"
                                 alt="Karime Sandoval en su consultorio"
+                                width={1200}
+                                height={1600}
+                                loading="lazy"
+                                decoding="async"
                                 className="h-full w-full object-cover"
                             />
                         </motion.div>

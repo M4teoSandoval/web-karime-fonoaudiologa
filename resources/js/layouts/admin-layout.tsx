@@ -1,7 +1,7 @@
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CalendarDays, ClipboardList, Clock, LayoutGrid, LogOut, X } from 'lucide-react';
+import { CalendarDays, ClipboardList, Clock, ExternalLink, LayoutGrid, LogOut, X } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 
 const navItems = [
@@ -79,6 +79,16 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
                     <div className="flex shrink-0 items-center gap-3">
                         <span className="hidden text-sm font-semibold text-[#706a67] sm:block">{auth.user?.name}</span>
 
+                        <a
+                            href="/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hidden items-center gap-2 rounded-full border border-[#eadedf] bg-white px-4 py-2 text-sm font-semibold text-[#706a67] transition-colors duration-200 hover:border-[#7d8f7a] hover:text-[#6f826c] sm:inline-flex"
+                        >
+                            <ExternalLink className="size-4" />
+                            Ver página web
+                        </a>
+
                         <button
                             type="button"
                             onClick={() => router.post(route('logout'))}
@@ -109,6 +119,16 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
                             </Link>
                         );
                     })}
+
+                    <a
+                        href="/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-semibold text-[#706a67] ring-1 ring-[#eadedf] transition-colors duration-200 hover:text-[#6f826c]"
+                    >
+                        <ExternalLink className="size-3.5" />
+                        Ver página web
+                    </a>
                 </nav>
             </header>
 

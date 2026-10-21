@@ -102,7 +102,7 @@ export function Navbar() {
                                             <Link
                                                 key={item.title}
                                                 href={item.href}
-                                                className="group border-b border-[#eadedf] py-5 text-lg font-medium text-[#373432] transition-colors hover:text-[#d99aa8]"
+                                                className="group border-b border-[#eadedf] py-5 font-sans text-lg font-medium text-[#373432] transition-colors hover:text-[#d99aa8]"
                                             >
                                                 <span className="mr-4 text-xs text-[#7d8f7a]">0{index + 1}</span>
 

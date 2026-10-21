@@ -82,9 +82,10 @@ export interface ScheduleDayConfig {
     id?: number;
     day_of_week: number;
     day_name: string;
-    start_time: string;
-    end_time: string;
+    start_time: string | null;
+    end_time: string | null;
     is_active: boolean;
+    intervals: { start_time: string; end_time: string }[];
 }
 
 export interface AvailabilityBlockItem {
@@ -109,7 +110,7 @@ export interface AgendaDay {
     date: string;
     day_name: string;
     day_number: string;
-    schedule: { start_time: string; end_time: string } | null;
+    intervals: { start_time: string; end_time: string }[];
     appointments: AgendaAppointmentItem[];
     blocks: {
         id: number;

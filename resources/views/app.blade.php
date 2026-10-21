@@ -6,8 +6,14 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <!--
+            Dancing Script se sirve autoalojada desde /public/fonts
+            (ver resources/css/app.css). La hoja de fonts.bunny.net
+            anterior cargaba "instrument-sans", una familia que no se
+            usaba en ningún lugar de la web: solo sumaba una petición
+            bloqueante en cada carga.
+        -->
+        <link rel="preload" href="/fonts/dancing-script.woff2" as="font" type="font/woff2" crossorigin>
 
         @routes
         @viteReactRefresh

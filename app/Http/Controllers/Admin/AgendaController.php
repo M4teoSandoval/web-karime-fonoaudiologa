@@ -43,22 +43,29 @@ class AgendaController extends Controller
         $schedules = WorkSchedule::query()
             ->where('is_active', true)
             ->get()
-            ->keyBy('day_of_week');
+            ->groupBy('day_of_week');
 
         $days = [];
 
         for ($i = 0; $i < 7; $i++) {
             $day = $start->copy()->addDays($i);
 
-            $schedule = $schedules->get((int) $day->dayOfWeek);
+            $daySchedules = $schedules->get((int) $day->dayOfWeek);
 
             $days[] = [
                 'date' => $day->toDateString(),
                 'day_name' => $day->locale('es')->isoFormat('dddd'),
                 'day_number' => $day->format('d'),
-                'schedule' => $schedule !== null
-                    ? ['start_time' => $schedule->start_time, 'end_time' => $schedule->end_time]
-                    : null,
+                'intervals' => $daySchedules !== null
+                    ? $daySchedules
+                        ->sortBy('start_time')
+                        ->values()
+                        ->map(fn (WorkSchedule $schedule) => [
+                            'start_time' => $schedule->start_time,
+                            'end_time' => $schedule->end_time,
+                        ])
+                        ->all()
+                    : [],
                 'appointments' => $appointments
                     ->filter(fn (AppointmentRequest $appointment) => $appointment->confirmed_start?->isSameDay($day))
                     ->values()
