@@ -188,24 +188,17 @@ export function Hero() {
                         }}
                         className="relative mx-auto w-full max-w-[520px]"
                     >
-                        {/* Soft animated background shape */}
-                        <motion.div
-                            animate={{
-                                y: [0, -8, 0],
-                                rotate: [0, 2, 0],
-                            }}
-                            transition={{
-                                duration: 7,
-                                repeat: Infinity,
-                                ease: 'easeInOut',
-                            }}
-                            className="absolute -top-8 -right-8 -z-10 h-[75%] w-[75%] rounded-[45%] bg-[#7d8f7a]/10 blur-sm"
-                        />
+                        {/* Soft background shape — estática a propósito.
+                            Antes se animaba en bucle infinito con desenfoque, lo que
+                            obligaba a repintar una capa grande cada fotograma y
+                            competía con el scroll en iPhone. Al no moverse, el
+                            desenfoque se rasteriza una sola vez. */}
+                        <div className="absolute -top-8 -right-8 -z-10 h-[75%] w-[75%] rounded-[45%] bg-[#7d8f7a]/10 blur-sm" />
 
                         {/* Main image frame */}
                         <div className="relative aspect-[4/5] overflow-hidden rounded-[45%_45%_24%_24%] bg-[#f4e7e8]">
                             <img
-                                src="/images/karime/karime_profesional.jpeg"
+                                src="/images/karime/karime_profesional.webp"
                                 alt="Karime Sandoval, fonoaudióloga y audióloga"
                                 width={1400}
                                 height={1867}

@@ -4,7 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'Karime Sandoval') }}</title>
+
+        <link rel="icon" type="image/png" href="/images/branding/logo-karime-sandoval.png">
 
         <!--
             Dancing Script se sirve autoalojada desde /public/fonts

@@ -180,7 +180,7 @@ export function Contact() {
                         {/* Main office photo */}
                         <div className="relative aspect-[4/3] overflow-hidden rounded-[32px] bg-[#ead8da]">
                             <img
-                                src="/images/foto_consultorio.jpg"
+                                src="/images/foto_consultorio.webp"
                                 alt="Consultorio de Karime Sandoval, fonoaudióloga"
                                 width={941}
                                 height={1672}
@@ -202,7 +202,7 @@ export function Contact() {
                             className="absolute -bottom-10 -left-5 aspect-[4/3] w-44 overflow-hidden rounded-3xl border-8 border-[#f4eee9] bg-[#f4e7e8] shadow-[0_18px_40px_rgba(85,72,74,0.10)] sm:-left-8 sm:w-52"
                         >
                             <img
-                                src="/images/foto_inauguracion_consultorio.jpg"
+                                src="/images/foto_inauguracion_consultorio.webp"
                                 alt="Inauguración del consultorio de Karime Sandoval"
                                 width={851}
                                 height={1849}

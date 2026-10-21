@@ -9,9 +9,7 @@ import { Contact } from '@/components/home/contact';
 export default function Welcome() {
     return (
         <>
-            <Head title="Karime Sandoval · Fonoaudióloga">
-                <link rel="icon" type="image/svg+xml" href="/images/branding/logo-karime-sandoval.png" />
-            </Head>
+            <Head title="Karime Sandoval · Fonoaudióloga" />
 
             {/* reducedMotion="user": respeta prefers-reduced-motion del dispositivo sin desactivar animaciones para el resto. */}
             <MotionConfig reducedMotion="user">

@@ -44,7 +44,7 @@ export function About() {
                         {/* Main photo */}
                         <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] bg-[#ead8da]">
                             <img
-                                src="/images/karime/karime_foto_frontal_fondoneutro.jpeg"
+                                src="/images/karime/karime_foto_frontal_fondoneutro.webp"
                                 alt="Karime Sandoval, fonoaudióloga y audióloga"
                                 width={800}
                                 height={1000}
@@ -69,7 +69,7 @@ export function About() {
                             className="absolute -right-4 -bottom-8 flex aspect-square w-32 items-center justify-center overflow-hidden rounded-3xl border-8 border-[#fcf9f7] bg-[#f4e7e8] shadow-[0_15px_40px_rgba(85,72,74,0.10)] sm:-right-8 sm:w-40"
                         >
                             <img
-                                src="/images/karime/foto_karime_frente_enconsultorio.jpeg"
+                                src="/images/karime/foto_karime_frente_enconsultorio.webp"
                                 alt="Karime Sandoval en su consultorio"
                                 width={1200}
                                 height={1600}

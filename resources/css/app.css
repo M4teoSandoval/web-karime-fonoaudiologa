@@ -69,11 +69,13 @@
 /* =========================================================
    BRAND FONT — DANCING SCRIPT (autoalojada)
    ---------------------------------------------------------
-   El nombre "Karime Sandoval" usa font-brand (Dancing Script).
-   Antes la fuente nunca se descargaba: en iPhone Safari el
-   navegador caía a una cursiva del sistema que no correspondía
-   al diseño. Ahora se sirve desde /public/fonts para que el
-   navbar se vea igual en computador y en móvil.
+   font-brand (Dancing Script) se usa SOLO como acento
+   decorativo en frases del contenido (hero, servicios, etc.).
+   El nombre "Karime Sandoval" de la navegación ya no la usa:
+   se muestra en la tipografía normal para que el menú móvil y
+   el de escritorio se vean igual y sin cursivas. Dancing Script
+   se sirve desde /public/fonts para que ese acento decorativo
+   sea consistente en todos los dispositivos.
    ========================================================= */
 
 @font-face {

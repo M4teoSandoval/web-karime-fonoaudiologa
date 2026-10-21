@@ -1,5 +1,5 @@
 import { type SharedData } from '@/types';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CalendarDays, ClipboardList, Clock, ExternalLink, LayoutGrid, LogOut, X } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
@@ -38,6 +38,8 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
 
     return (
         <div className="min-h-screen bg-[#fcf9f7] text-[#373432]">
+            <Head title={title ? `${title} · Karime Sandoval` : 'Karime Sandoval'} />
+
             {/* =================================================
                 HEADER
             ================================================= */}
@@ -47,7 +49,7 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
                     <Link href="/admin" className="flex shrink-0 items-center gap-3">
                         <img src="/images/branding/logo-karime-sandoval.png" alt="Karime Sandoval" className="h-10 w-auto" />
 
-                        <span className="hidden font-brand text-2xl leading-none text-[#373432] sm:block">Karime Sandoval</span>
+                        <span className="hidden text-2xl leading-none font-semibold text-[#373432] sm:block">Karime Sandoval</span>
 
                         <span className="hidden rounded-full bg-[#7d8f7a]/12 px-2.5 py-1 text-[10px] font-bold tracking-[0.15em] text-[#6f826c] uppercase lg:block">
                             Panel

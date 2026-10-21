@@ -18,7 +18,7 @@ export function Navbar() {
     return (
         <header className="fixed inset-x-0 top-0 z-50">
             <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
-                <div className="overflow-hidden rounded-[28px] border border-[#eadedf]/80 bg-[#fcf9f7]/90 shadow-[0_12px_40px_rgba(55,52,50,0.08)] backdrop-blur-xl">
+                <div className="overflow-hidden rounded-[28px] border border-[#eadedf]/80 bg-[#fcf9f7]/90 shadow-[0_12px_40px_rgba(55,52,50,0.08)]">
                     <div className="flex h-[72px] items-center justify-between px-5 sm:px-7">
                         {/* =================================================
                             BRAND
@@ -30,7 +30,7 @@ export function Navbar() {
                                 className="h-13 w-auto transition-transform duration-300 group-hover:scale-[1.02]"
                             />
 
-                            <span className="font-brand text-[35px] leading-none text-[#373432] transition-colors duration-300 group-hover:text-[#d99aa8]">
+                            <span className="text-[35px] leading-none font-semibold text-[#373432] transition-colors duration-300 group-hover:text-[#d99aa8]">
                                 Karime Sandoval
                             </span>
                         </Link>
@@ -93,7 +93,7 @@ export function Navbar() {
                                 <SheetContent side="right" className="w-[88%] border-[#eadedf] bg-[#fcf9f7] sm:max-w-sm">
                                     <SheetHeader className="border-b border-[#eadedf] pb-5">
                                         <SheetTitle className="text-left">
-                                            <span className="font-brand text-3xl font-normal text-[#373432]">Karime Sandoval</span>
+                                            <span className="text-3xl font-semibold text-[#373432]">Karime Sandoval</span>
                                         </SheetTitle>
                                     </SheetHeader>
 
@@ -102,7 +102,7 @@ export function Navbar() {
                                             <Link
                                                 key={item.title}
                                                 href={item.href}
-                                                className="group border-b border-[#eadedf] py-5 font-sans text-lg font-medium text-[#373432] transition-colors hover:text-[#d99aa8]"
+                                                className="group border-b border-[#eadedf] py-5 text-lg font-medium text-[#373432] transition-colors hover:text-[#d99aa8]"
                                             >
                                                 <span className="mr-4 text-xs text-[#7d8f7a]">0{index + 1}</span>
 
