@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { serviceNames } from '@/data/services';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { type SharedData } from '@/types';
 import { useForm, usePage } from '@inertiajs/react';
 import { motion, type Variants } from 'framer-motion';
@@ -37,6 +38,9 @@ const steps = [
 ];
 
 export function Booking() {
+    /* En móvil el formulario y el texto se muestran ya visibles, sin reveal de scroll (ver About). */
+    const isMobile = useIsMobile();
+
     const { flash } = usePage<SharedData>().props;
 
     const [clientErrors, setClientErrors] = useState<ClientErrors>({});
@@ -91,16 +95,16 @@ export function Booking() {
     return (
         <section id="agenda" className="relative overflow-hidden bg-[#fcf9f7] py-24 sm:py-32">
             {/* Decorative background */}
-            <div className="pointer-events-none absolute -top-32 left-1/4 h-[420px] w-[420px] rounded-full bg-[#d99aa8]/8 blur-3xl" aria-hidden="true" />
+            <div className="perf-glow pointer-events-none absolute -top-32 left-1/4 h-[420px] w-[420px] rounded-full bg-[#d99aa8]/8 blur-3xl" aria-hidden="true" />
 
-            <div className="pointer-events-none absolute -bottom-40 -right-32 h-[420px] w-[420px] rounded-full bg-[#7d8f7a]/10 blur-3xl" aria-hidden="true" />
+            <div className="perf-glow pointer-events-none absolute -bottom-40 -right-32 h-[420px] w-[420px] rounded-full bg-[#7d8f7a]/10 blur-3xl" aria-hidden="true" />
 
             <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
                 <div className="grid items-start gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
                     {/* =================================================
                         LEFT — COPY
                     ================================================= */}
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} className="max-w-xl lg:sticky lg:top-32">
+                    <motion.div initial={isMobile ? 'visible' : 'hidden'} whileInView="visible" viewport={{ once: true, amount: 0.3 }} className="max-w-xl lg:sticky lg:top-32">
                         <motion.div variants={fadeUp} className="mb-7 flex items-center gap-3">
                             <span className="h-px w-10 bg-[#d99aa8]" />
 
@@ -109,7 +113,7 @@ export function Booking() {
 
                         <motion.h2 variants={fadeUp} className="text-[2.8rem] leading-[1] font-normal tracking-[-0.04em] text-[#373432] sm:text-5xl lg:text-[4.2rem]">
                             Agenda tu cita
-                            <span className="font-brand block text-[#d99aa8]">en pocos pasos.</span>
+                            <span className="font-script block text-[#d99aa8]">en pocos pasos.</span>
                         </motion.h2>
 
                         <motion.p variants={fadeUp} className="mt-7 max-w-lg text-base leading-7 text-[#706a67] sm:text-lg">
@@ -137,7 +141,7 @@ export function Booking() {
                         RIGHT — FORM CARD
                     ================================================= */}
                     <motion.div
-                        initial={{ opacity: 0, y: 24 }}
+                        initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, amount: 0.2 }}
                         transition={{ duration: 0.7, ease: 'easeOut' }}

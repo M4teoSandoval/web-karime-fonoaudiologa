@@ -13,7 +13,7 @@ export default function Welcome() {
 
             {/* reducedMotion="user": respeta prefers-reduced-motion del dispositivo sin desactivar animaciones para el resto. */}
             <MotionConfig reducedMotion="user">
-                <div className="min-h-screen bg-[#fcf9f7]">
+                <div className="min-h-svh bg-[#fcf9f7]">
                     <Navbar />
                     <main>
                         <Hero />

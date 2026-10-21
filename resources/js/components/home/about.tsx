@@ -1,3 +1,4 @@
+import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 
 const fadeUp = {
@@ -16,15 +17,23 @@ const fadeUp = {
 };
 
 export function About() {
+    /*
+        En móvil el bloque aparece ya visible (sin reveal ligado al
+        scroll). Evita que Safari iOS cree capas grandes con
+        will-change mientras se desplaza, que era una de las causas
+        de los bloques grises/blancos. En escritorio no cambia nada.
+    */
+    const isMobile = useIsMobile();
+
     return (
         <section
             id="sobre-mi"
             className="relative overflow-hidden bg-[#fcf9f7] py-24 sm:py-32 lg:py-40"
         >
             {/* Decorative background */}
-            <div className="pointer-events-none absolute -right-40 top-20 h-[420px] w-[420px] rounded-full bg-[#7d8f7a]/10 blur-3xl" />
+            <div className="perf-glow pointer-events-none absolute -right-40 top-20 h-[420px] w-[420px] rounded-full bg-[#7d8f7a]/10 blur-3xl" />
 
-            <div className="pointer-events-none absolute -bottom-32 -left-32 h-[360px] w-[360px] rounded-full bg-[#d99aa8]/10 blur-3xl" />
+            <div className="perf-glow pointer-events-none absolute -bottom-32 -left-32 h-[360px] w-[360px] rounded-full bg-[#d99aa8]/10 blur-3xl" />
 
             <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
                 <div className="grid items-center gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-24">
@@ -93,7 +102,7 @@ export function About() {
                         RIGHT — CONTENT
                     ================================================= */}
                     <motion.div
-                        initial="hidden"
+                        initial={isMobile ? 'visible' : 'hidden'}
                         whileInView="visible"
                         viewport={{ once: true, amount: 0.2 }}
                         className="max-w-2xl"
@@ -114,7 +123,7 @@ export function About() {
                             className="text-[2.8rem] leading-[1] font-normal tracking-[-0.04em] text-[#373432] sm:text-5xl lg:text-[4.2rem]"
                         >
                             Conoce a{' '}
-                            <span className="font-brand text-[#d99aa8]">
+                            <span className="font-script text-[#d99aa8]">
                                 Karime.
                             </span>
                         </motion.h2>

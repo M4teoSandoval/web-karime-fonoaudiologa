@@ -1,5 +1,6 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { services } from '@/data/services';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 
@@ -28,6 +29,15 @@ const itemVariants = {
 };
 
 export function Services() {
+    /*
+        En móvil detenemos los dos círculos decorativos que flotan en
+        bucle y mostramos el contenido sin reveal ligado al scroll:
+        son animaciones continuas/de capa que en Safari iOS fuerzan
+        recomposición durante el scroll. En escritorio (>=768px) todo
+        se mantiene exactamente igual.
+    */
+    const isMobile = useIsMobile();
+
     return (
         <section id="servicios" className="relative overflow-hidden bg-[#fcf9f7] py-24 sm:py-32">
             {/* =========================================================
@@ -36,13 +46,13 @@ export function Services() {
 
             {/* Soft pink glow */}
             <div
-                className="pointer-events-none absolute top-0 -right-40 h-[450px] w-[450px] rounded-full bg-[#d99aa8]/8 blur-3xl"
+                className="perf-glow pointer-events-none absolute top-0 -right-40 h-[450px] w-[450px] rounded-full bg-[#d99aa8]/8 blur-3xl"
                 aria-hidden="true"
             />
 
             {/* Soft sage glow */}
             <div
-                className="pointer-events-none absolute -bottom-48 -left-40 h-[500px] w-[500px] rounded-full bg-[#7d8f7a]/10 blur-3xl"
+                className="perf-glow pointer-events-none absolute -bottom-48 -left-40 h-[500px] w-[500px] rounded-full bg-[#7d8f7a]/10 blur-3xl"
                 aria-hidden="true"
             />
 
@@ -117,28 +127,38 @@ export function Services() {
 
                 {/* Small floating circles */}
                 <motion.div
-                    animate={{
-                        y: [0, -10, 0],
-                        rotate: [0, 3, 0],
-                    }}
-                    transition={{
-                        duration: 7,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                    }}
+                    animate={
+                        isMobile
+                            ? { y: 0, rotate: 0 }
+                            : { y: [0, -10, 0], rotate: [0, 3, 0] }
+                    }
+                    transition={
+                        isMobile
+                            ? undefined
+                            : {
+                                  duration: 7,
+                                  repeat: Infinity,
+                                  ease: 'easeInOut',
+                              }
+                    }
                     className="absolute top-[18%] right-[28%] size-5 rounded-full border border-[#d99aa8]/20"
                 />
 
                 <motion.div
-                    animate={{
-                        y: [0, 8, 0],
-                        rotate: [0, -3, 0],
-                    }}
-                    transition={{
-                        duration: 8,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                    }}
+                    animate={
+                        isMobile
+                            ? { y: 0, rotate: 0 }
+                            : { y: [0, 8, 0], rotate: [0, -3, 0] }
+                    }
+                    transition={
+                        isMobile
+                            ? undefined
+                            : {
+                                  duration: 8,
+                                  repeat: Infinity,
+                                  ease: 'easeInOut',
+                              }
+                    }
                     className="absolute right-[12%] bottom-[18%] size-8 rounded-full border border-[#7d8f7a]/20"
                 />
 
@@ -154,7 +174,7 @@ export function Services() {
             <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
                 {/* Section heading */}
                 <motion.div
-                    initial="hidden"
+                    initial={isMobile ? 'visible' : 'hidden'}
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.2 }}
                     variants={containerVariants}
@@ -170,7 +190,7 @@ export function Services() {
 
                     <motion.h2 variants={itemVariants} className="text-4xl leading-tight font-normal tracking-[-0.03em] text-[#373432] sm:text-5xl">
                         Un acompañamiento
-                        <span className="font-brand block text-[#d99aa8]">pensado para ti.</span>
+                        <span className="font-script block text-[#d99aa8]">pensado para ti.</span>
                     </motion.h2>
 
                     <motion.p variants={itemVariants} className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#706a67] sm:text-lg">
@@ -183,7 +203,7 @@ export function Services() {
                 ========================================================= */}
 
                 <motion.div
-                    initial="hidden"
+                    initial={isMobile ? 'visible' : 'hidden'}
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.1 }}
                     variants={containerVariants}
@@ -345,9 +365,9 @@ export function Services() {
             </div>
             {/* Organic transition to Services */}
             <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-20 overflow-hidden" aria-hidden="true">
-                <div className="absolute -bottom-24 left-[12%] h-48 w-72 rounded-full bg-[#7d8f7a]/10 blur-3xl" />
+                <div className="perf-glow absolute -bottom-24 left-[12%] h-48 w-72 rounded-full bg-[#7d8f7a]/10 blur-3xl" />
 
-                <div className="absolute -right-10 -bottom-20 h-44 w-64 rounded-full bg-[#d99aa8]/10 blur-3xl" />
+                <div className="perf-glow absolute -right-10 -bottom-20 h-44 w-64 rounded-full bg-[#d99aa8]/10 blur-3xl" />
 
                 <svg viewBox="0 0 1440 180" preserveAspectRatio="none" className="absolute right-0 bottom-0 h-full w-full">
                     <path d="M0 115C190 155 350 160 540 125C760 85 900 35 1110 48C1240 56 1340 82 1440 65V180H0Z" fill="#fcfaf8" />

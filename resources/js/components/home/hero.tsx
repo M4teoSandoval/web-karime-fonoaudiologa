@@ -1,3 +1,4 @@
+import { useIsMobile } from '@/hooks/use-mobile';
 import { defaultWhatsAppUrl } from '@/lib/whatsapp';
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
@@ -21,8 +22,16 @@ const fadeUp = {
 };
 
 export function Hero() {
+    /*
+        En móvil desactivamos SOLO los bucles infinitos (dot y flecha):
+        animan de forma continua y en Safari iOS obligan a recomponer
+        capas durante todo el scroll. Las animaciones de entrada y las
+        de scroll se mantienen. En escritorio (>=768px) todo sigue igual.
+    */
+    const isMobile = useIsMobile();
+
     return (
-        <section id="inicio" className="relative min-h-screen overflow-hidden bg-[#fcf9f7]">
+        <section id="inicio" className="relative min-h-svh overflow-hidden bg-[#fcf9f7]">
             {/* =================================================
     BACKGROUND DECORATION
 ================================================= */}
@@ -32,7 +41,7 @@ export function Hero() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1.4 }}
-                className="pointer-events-none absolute -top-32 -right-32 h-[520px] w-[520px] rounded-full bg-[#d99aa8]/12 blur-[80px]"
+                className="perf-glow pointer-events-none absolute -top-32 -right-32 h-[520px] w-[520px] rounded-full bg-[#d99aa8]/12 blur-[80px]"
             />
 
             {/* Soft sage organic glow — bottom left */}
@@ -40,7 +49,7 @@ export function Hero() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1.6, delay: 0.15 }}
-                className="pointer-events-none absolute -bottom-40 -left-32 h-[480px] w-[480px] rounded-full bg-[#7d8f7a]/12 blur-[85px]"
+                className="perf-glow pointer-events-none absolute -bottom-40 -left-32 h-[480px] w-[480px] rounded-full bg-[#7d8f7a]/12 blur-[85px]"
             />
 
             {/* Large organic pink shape */}
@@ -226,7 +235,7 @@ export function Hero() {
                             }}
                             className="absolute -right-3 bottom-16 rounded-2xl bg-[#d99aa8] px-5 py-4 shadow-[0_18px_40px_rgba(85,72,74,0.12)] sm:-right-8"
                         >
-                            <p className="font-brand text-2xl leading-none text-white">Atención</p>
+                            <p className="font-script text-2xl leading-none text-white">Atención</p>
 
                             <p className="mt-1 text-xs font-bold tracking-wider text-white/80 uppercase">personalizada</p>
                         </motion.div>
@@ -273,15 +282,20 @@ export function Hero() {
 
                         {/* Tiny decorative dot */}
                         <motion.div
-                            animate={{
-                                y: [0, -6, 0],
-                                opacity: [0.5, 0.9, 0.5],
-                            }}
-                            transition={{
-                                duration: 4,
-                                repeat: Infinity,
-                                ease: 'easeInOut',
-                            }}
+                            animate={
+                                isMobile
+                                    ? { y: 0, opacity: 0.7 }
+                                    : { y: [0, -6, 0], opacity: [0.5, 0.9, 0.5] }
+                            }
+                            transition={
+                                isMobile
+                                    ? undefined
+                                    : {
+                                          duration: 4,
+                                          repeat: Infinity,
+                                          ease: 'easeInOut',
+                                      }
+                            }
                             className="absolute right-12 -bottom-5 size-3 rounded-full bg-[#d99aa8]"
                         />
                     </motion.div>
@@ -306,14 +320,16 @@ export function Hero() {
                     <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Descubre</span>
 
                     <motion.div
-                        animate={{
-                            y: [0, 5, 0],
-                        }}
-                        transition={{
-                            duration: 1.8,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                        }}
+                        animate={isMobile ? { y: 0 } : { y: [0, 5, 0] }}
+                        transition={
+                            isMobile
+                                ? undefined
+                                : {
+                                      duration: 1.8,
+                                      repeat: Infinity,
+                                      ease: 'easeInOut',
+                                  }
+                        }
                     >
                         <ArrowDown className="size-4 text-[#d99aa8]" />
                     </motion.div>
@@ -322,9 +338,9 @@ export function Hero() {
 
             {/* Organic transition to Services */}
             <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-20 overflow-hidden" aria-hidden="true">
-                <div className="absolute -bottom-24 left-[12%] h-48 w-72 rounded-full bg-[#7d8f7a]/10 blur-3xl" />
+                <div className="perf-glow absolute -bottom-24 left-[12%] h-48 w-72 rounded-full bg-[#7d8f7a]/10 blur-3xl" />
 
-                <div className="absolute -right-10 -bottom-20 h-44 w-64 rounded-full bg-[#d99aa8]/10 blur-3xl" />
+                <div className="perf-glow absolute -right-10 -bottom-20 h-44 w-64 rounded-full bg-[#d99aa8]/10 blur-3xl" />
 
                 <svg viewBox="0 0 1440 180" preserveAspectRatio="none" className="absolute right-0 bottom-0 h-full w-full">
                     <path d="M0 115C190 155 350 160 540 125C760 85 900 35 1110 48C1240 56 1340 82 1440 65V180H0Z" fill="#fcfaf8" />

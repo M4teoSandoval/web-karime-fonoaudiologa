@@ -1,3 +1,4 @@
+import { useIsMobile } from '@/hooks/use-mobile';
 import { defaultWhatsAppUrl } from '@/lib/whatsapp';
 import { motion } from 'framer-motion';
 import {
@@ -25,6 +26,9 @@ const fadeUp = {
 };
 
 export function Contact() {
+    /* En móvil el contenido se muestra ya visible, sin reveal de scroll (ver About). */
+    const isMobile = useIsMobile();
+
     return (
         <section
             id="contacto"
@@ -34,9 +38,9 @@ export function Contact() {
                 DECORATIVE BACKGROUND
             ================================================= */}
 
-            <div className="pointer-events-none absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-[#7d8f7a]/10 blur-3xl" />
+            <div className="perf-glow pointer-events-none absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-[#7d8f7a]/10 blur-3xl" />
 
-            <div className="pointer-events-none absolute -right-40 bottom-0 h-[420px] w-[420px] rounded-full bg-[#d99aa8]/10 blur-3xl" />
+            <div className="perf-glow pointer-events-none absolute -right-40 bottom-0 h-[420px] w-[420px] rounded-full bg-[#d99aa8]/10 blur-3xl" />
 
             {/* Decorative circles */}
             <div className="pointer-events-none absolute right-[12%] top-20 hidden size-28 rounded-full border border-[#7d8f7a]/20 lg:block" />
@@ -50,7 +54,7 @@ export function Contact() {
                     ================================================= */}
 
                     <motion.div
-                        initial="hidden"
+                        initial={isMobile ? 'visible' : 'hidden'}
                         whileInView="visible"
                         viewport={{ once: true, amount: 0.2 }}
                         className="max-w-xl"
@@ -71,7 +75,7 @@ export function Contact() {
                             className="max-w-lg text-[3rem] leading-[0.98] font-normal tracking-[-0.04em] text-[#373432] sm:text-5xl lg:text-[4.4rem]"
                         >
                             Tu bienestar
-                            <span className="block font-brand text-[#d99aa8]">
+                            <span className="block font-script text-[#d99aa8]">
                                 comienza aquí.
                             </span>
                         </motion.h2>

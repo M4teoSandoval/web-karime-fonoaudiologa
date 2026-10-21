@@ -8,7 +8,6 @@
 
 @theme {
     --font-sans: 'Dhyana', ui-sans-serif, system-ui, sans-serif;
-    --font-brand: 'Dancing Script', cursive;
     --font-script: 'Bad Script', cursive;
 
     --color-background: var(--background);
@@ -67,23 +66,40 @@
 }
 
 /* =========================================================
-   BRAND FONT — DANCING SCRIPT (autoalojada)
+   TIPOGRAFÍAS AUTOALOJADAS
    ---------------------------------------------------------
-   font-brand (Dancing Script) se usa SOLO como acento
-   decorativo en frases del contenido (hero, servicios, etc.).
-   El nombre "Karime Sandoval" de la navegación ya no la usa:
-   se muestra en la tipografía normal para que el menú móvil y
-   el de escritorio se vean igual y sin cursivas. Dancing Script
-   se sirve desde /public/fonts para que ese acento decorativo
-   sea consistente en todos los dispositivos.
+   Dhyana (400/700): tipografía principal de todo el sitio.
+   Bad Script (400): acento decorativo manuscrito (font-script)
+   en frases del hero, navbar y textos de acento.
+   Los archivos WOFF2 viven en /public/fonts y se sirven por
+   HTTPS desde el mismo dominio, por lo que Safari (también en
+   iPhone) los carga sin problemas.
    ========================================================= */
 
 @font-face {
-    font-family: 'Dancing Script';
+    font-family: 'Dhyana';
     font-style: normal;
-    font-weight: 400 700;
+    font-weight: 400;
     font-display: swap;
-    src: url('/fonts/dancing-script.woff2') format('woff2');
+    src: url('/fonts/dhyana-400.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Dhyana';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/dhyana-700.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Bad Script';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/bad-script-400.woff2') format('woff2');
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -138,8 +154,31 @@
     --ring: #d99aa8;
 }
 
-@layer utilities {
-    .font-brand {
-        font-family: 'Dancing Script', cursive;
+/* =========================================================
+   OPTIMIZACIÓN DE RENDIMIENTO — EXCLUSIVA MÓVIL
+   ---------------------------------------------------------
+   En iPhone/Safari la combinación de muchos glows con blur
+   grande (filter: blur(64-85px)) que abarcan cientos de
+   píxeles provoca repintados y re-rasterización de capas
+   durante el scroll: parte del contenido aparece en gris,
+   blanco o negro hasta que Safari vuelve a componerlo.
+
+   Estas reglas solo se activan por debajo del breakpoint
+   "lg" (1024px), es decir, en móviles y tablets pequeñas.
+   Por encima de 1024px (escritorio) no se aplica nada y la
+   apariencia y las animaciones quedan intactas.
+
+   - .perf-glow: reduce el radio de blur de los glows
+     decorativos. Con 28px el aspecto suave se conserva
+     pero el coste de rasterización baja mucho.
+   - Los bucles infinitos de Framer Motion no se detienen
+     aquí por CSS (son animaciones por JS); se desactivan en
+     los componentes con useIsMobile() por debajo de 768px,
+     conservando el resto de transiciones.
+   ========================================================= */
+
+@media (max-width: 1023px) {
+    .perf-glow {
+        filter: blur(28px);
     }
 }

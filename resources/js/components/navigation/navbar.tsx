@@ -23,14 +23,21 @@ export function Navbar() {
                         {/* =================================================
                             BRAND
                         ================================================= */}
-                        <Link href={route('home')} className="group flex items-center gap-3">
+                        <Link href={route('home')} className="group flex items-center gap-2.5 sm:gap-3">
                             <img
                                 src="/images/branding/logo-karime-sandoval.png"
                                 alt="Karime Sandoval"
-                                className="h-13 w-auto transition-transform duration-300 group-hover:scale-[1.02]"
+                                className="h-12 w-auto transition-transform duration-300 group-hover:scale-[1.02] sm:h-14"
                             />
 
-                            <span className="text-[35px] leading-none font-semibold text-[#373432] transition-colors duration-300 group-hover:text-[#d99aa8]">
+                            {/*
+                                Marca en Bad Script (font-script). Bad Script solo
+                                existe en peso 400, así que no se aplica font-semibold
+                                (evita falsos negritas sintéticas). El tamaño es
+                                moderado y crece solo en pantallas grandes para no
+                                desbordes ni competir con el logo o el menú.
+                            */}
+                            <span className="font-script text-[25px] leading-none text-[#373432] transition-colors duration-300 group-hover:text-[#d99aa8] sm:text-[29px]">
                                 Karime Sandoval
                             </span>
                         </Link>
@@ -93,7 +100,7 @@ export function Navbar() {
                                 <SheetContent side="right" className="w-[88%] border-[#eadedf] bg-[#fcf9f7] sm:max-w-sm">
                                     <SheetHeader className="border-b border-[#eadedf] pb-5">
                                         <SheetTitle className="text-left">
-                                            <span className="text-3xl font-semibold text-[#373432]">Karime Sandoval</span>
+                                            <span className="font-script text-[27px] leading-none text-[#373432]">Karime Sandoval</span>
                                         </SheetTitle>
                                     </SheetHeader>
 
