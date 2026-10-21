@@ -203,3 +203,9 @@ test('el enlace de Maps apunta a la ficha del consultorio en Google', function (
             ->where('site.maps_url', 'https://maps.app.goo.gl/Q9D2mgrLzNb7z1k27')
         );
 });
+
+test('la dirección publicada coincide con la ficha de Google', function () {
+    expect(config('site.professional.street_address'))
+        ->toBe('Carrera 9A #10A-02, local esquinero, 2do piso')
+        ->toContain('Carrera 9A #10A-02');
+});

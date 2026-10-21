@@ -161,11 +161,11 @@ export function Contact() {
                                     </p>
 
                                     <p className="mt-1 text-sm font-semibold text-[#373432]">
-                                        Calle 10 #8A-90
+                                        Cra. 9A #10A-02, local esquinero
                                     </p>
 
                                     <p className="text-sm text-[#706a67]">
-                                        Santa Rosa del Sur, Bolívar
+                                        2do piso · Santa Rosa del Sur, Bolívar
                                     </p>
                                 </div>
 

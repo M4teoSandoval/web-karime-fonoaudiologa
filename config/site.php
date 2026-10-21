@@ -38,7 +38,7 @@ return [
         'name' => 'Karime Sandoval',
         'full_name' => 'Karime Natalia Sandoval Barreto',
         'job_title' => 'Fonoaudióloga',
-        'street_address' => 'Calle 10 #8A-90',
+        'street_address' => 'Carrera 9A #10A-02, local esquinero, 2do piso',
         'locality' => 'Santa Rosa del Sur',
         'region' => 'Bolívar',
         'country' => 'CO',
