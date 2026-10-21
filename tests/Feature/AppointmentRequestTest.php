@@ -192,3 +192,14 @@ test('la portada renderiza los metadatos SEO en el servidor', function () {
     expect($html)->toContain('og:title');
     expect($html)->not->toContain('noindex');
 });
+
+test('el enlace de Maps apunta a la ficha del consultorio en Google', function () {
+    expect(config('site.maps_url'))->toBe('https://maps.app.goo.gl/Q9D2mgrLzNb7z1k27');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('welcome')
+            ->where('site.maps_url', 'https://maps.app.goo.gl/Q9D2mgrLzNb7z1k27')
+        );
+});

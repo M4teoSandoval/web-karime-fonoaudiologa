@@ -69,7 +69,7 @@ export function buildStructuredData(site: SiteConfig): Record<string, unknown> {
                 url: `${base}/`,
                 image,
                 telephone: `+${site.phone}`,
-                sameAs: [professional.instagram],
+                sameAs: [professional.instagram, site.maps_url],
                 alumniOf: {
                     '@type': 'EducationalOrganization',
                     name: 'Fundación Universitaria María Cano',
@@ -92,7 +92,8 @@ export function buildStructuredData(site: SiteConfig): Record<string, unknown> {
                 areaServed,
                 serviceType: ['Fonoaudiología', 'Audiología'],
                 hasOfferCatalog: { '@id': `${base}/#servicios` },
-                sameAs: [professional.instagram],
+                hasMap: site.maps_url,
+                sameAs: [professional.instagram, site.maps_url],
             },
         ],
     };

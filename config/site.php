@@ -20,8 +20,8 @@ return [
     // Teléfono de contacto (WhatsApp), en formato internacional sin signos.
     'phone' => env('WHATSAPP_NUMBER', '573150596654'),
 
-    // Ubicación del consultorio en Google Maps.
-    'maps_url' => env('SITE_MAPS_URL', 'https://maps.app.goo.gl/dsCV97xiMHNeW1wf7'),
+    // Ficha del consultorio en Google Maps (Google Business Profile).
+    'maps_url' => env('SITE_MAPS_URL', 'https://maps.app.goo.gl/Q9D2mgrLzNb7z1k27'),
 
     /*
         Metadatos SEO de la portada. Se renderizan en el servidor
