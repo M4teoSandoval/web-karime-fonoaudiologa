@@ -63,15 +63,6 @@ export function formatSlotLabel(slot: ProposedSlot): string {
     return formatDateTime(slot.start);
 }
 
-/** Mensaje de WhatsApp con las opciones de horario propuestas. */
-export function buildProposalWhatsAppUrl(patientName: string, slots: ProposedSlot[]): string {
-    const lines = slots.map((slot) => `- ${formatSlotLabel(slot)}`).join('\n');
-
-    const message = `Hola ${patientName}, tengo disponibles las siguientes opciones para tu cita:\n\n${lines}\n\n¿Cuál te queda mejor? Muchas gracias.`;
-
-    return buildWhatsAppUrl(message);
-}
-
 /** Construye un enlace wa.me para escribirle a un paciente específico. */
 export function buildPatientChatUrl(patientName: string, message: string): string {
     return buildWhatsAppUrl(`Hola ${patientName}, ${message}`);

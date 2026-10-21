@@ -1,10 +1,7 @@
 import { useIsMobile } from '@/hooks/use-mobile';
-import { defaultWhatsAppUrl } from '@/lib/whatsapp';
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
-
-const whatsappUrl = defaultWhatsAppUrl;
 
 const fadeUp = {
     hidden: {
@@ -133,8 +130,8 @@ export function Hero() {
 
                         {/* Description */}
                         <motion.p variants={fadeUp} className="mt-7 max-w-lg text-base leading-7 text-[#706a67] sm:text-lg">
-                            Atención especializada para todas las etapas de la vida, con un acompañamiento cercano, profesional y pensado para las
-                            necesidades de cada persona.
+                            Fonoaudiología y audición en Santa Rosa del Sur, Bolívar. Atención especializada para todas las etapas de la vida, con un
+                            acompañamiento cercano, profesional y pensado para las necesidades de cada persona.
                         </motion.p>
 
                         {/* Actions */}
@@ -282,11 +279,7 @@ export function Hero() {
 
                         {/* Tiny decorative dot */}
                         <motion.div
-                            animate={
-                                isMobile
-                                    ? { y: 0, opacity: 0.7 }
-                                    : { y: [0, -6, 0], opacity: [0.5, 0.9, 0.5] }
-                            }
+                            animate={isMobile ? { y: 0, opacity: 0.7 } : { y: [0, -6, 0], opacity: [0.5, 0.9, 0.5] }}
                             transition={
                                 isMobile
                                     ? undefined

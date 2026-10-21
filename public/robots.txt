@@ -1,2 +1,17 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Rutas privadas: el panel, el dashboard y la autenticación nunca deben
+# indexarse. No se bloquean CSS, JS ni imágenes: Google los necesita para
+# entender y renderizar la página.
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /login
+Disallow: /logout
+Disallow: /register
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /confirm-password
+
+Sitemap: https://fonoaudiokarime.com/sitemap.xml

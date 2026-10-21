@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /*
@@ -47,4 +48,30 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Devuelve el siguiente día hábil (lunes a viernes) a partir de hoy con la
+ * hora indicada, en formato "Y-m-d H:i:s".
+ *
+ * Permite que las pruebas de agenda no dependan de una fecha fija que, con el
+ * paso del tiempo, quedaría en el pasado y haría fallar la disponibilidad.
+ */
+function nextWeekday(string $time = '09:00:00'): string
+{
+    $date = now()->addDay();
+
+    while ($date->isWeekend()) {
+        $date = $date->addDay();
+    }
+
+    return $date->format('Y-m-d').' '.$time;
+}
+
+/**
+ * Fecha (Y-m-d) del siguiente día hábil a partir de hoy.
+ */
+function nextWeekdayDate(): string
+{
+    return Carbon::parse(nextWeekday())->toDateString();
 }

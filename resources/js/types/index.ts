@@ -27,10 +27,38 @@ export interface FlashData {
     whatsapp_url?: string | null;
 }
 
+export interface SiteSeo {
+    title: string;
+    description: string;
+}
+
+export interface SiteProfessional {
+    name: string;
+    full_name: string;
+    job_title: string;
+    street_address: string;
+    locality: string;
+    region: string;
+    country: string;
+    instagram: string;
+    image: string;
+    social_image: string;
+}
+
+export interface SiteConfig {
+    url: string;
+    name: string;
+    phone: string;
+    maps_url: string;
+    seo: SiteSeo;
+    professional: SiteProfessional;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    site: SiteConfig;
     flash: FlashData;
     [key: string]: unknown;
 }
@@ -70,6 +98,10 @@ export interface AppointmentRequest {
     notes: string | null;
     created_at: string;
     updated_at?: string | null;
+
+    /* Mensajes generados por el servidor con los datos reales de la cita. */
+    proposal_message?: string | null;
+    confirmation_message?: string | null;
 }
 
 export interface PaginationMeta {

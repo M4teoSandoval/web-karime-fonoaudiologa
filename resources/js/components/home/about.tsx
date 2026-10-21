@@ -133,9 +133,9 @@ export function About() {
                             className="mt-8 space-y-5 text-base leading-7 text-[#706a67] sm:text-lg"
                         >
                             <p>
-                                Soy Karime Sandoval, Fonoaudióloga y estudiante
-                                de la Especialización en Audiología. Me
-                                apasiona acompañar a niños, adolescentes y
+                                Soy Karime Natalia Sandoval Barreto, Fonoaudióloga y
+                                estudiante de la Especialización en Audiología.
+                                Me apasiona acompañar a niños, adolescentes y
                                 adultos en sus procesos de comunicación, habla,
                                 lenguaje, voz, deglución y audición.
                             </p>
@@ -145,6 +145,12 @@ export function About() {
                                 profesional, humana e individualizada,
                                 entendiendo que cada paciente tiene necesidades
                                 y procesos diferentes.
+                            </p>
+
+                            <p>
+                                Te recibo en mi consultorio en Santa Rosa del
+                                Sur, Bolívar, con una atención personalizada
+                                para cada proceso.
                             </p>
                         </motion.div>
 

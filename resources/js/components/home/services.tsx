@@ -194,7 +194,8 @@ export function Services() {
                     </motion.h2>
 
                     <motion.p variants={itemVariants} className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#706a67] sm:text-lg">
-                        Atención especializada para diferentes necesidades de comunicación, habla, voz, deglución y audición.
+                        Atención especializada en Santa Rosa del Sur para diferentes necesidades de comunicación, habla, voz, deglución y
+                        audición.
                     </motion.p>
                 </motion.div>
 
@@ -319,7 +320,7 @@ export function Services() {
                                             <DialogClose asChild>
                                                 <a
                                                     href="#agenda"
-                                                    onClick={(e) => {
+                                                    onClick={() => {
                                                         // Dejar que DialogClose cierre primero; luego scrollear
                                                         setTimeout(() => {
                                                             document.getElementById('agenda')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

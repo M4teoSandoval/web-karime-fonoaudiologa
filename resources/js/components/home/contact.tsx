@@ -1,5 +1,6 @@
 import { useIsMobile } from '@/hooks/use-mobile';
-import { defaultWhatsAppUrl } from '@/lib/whatsapp';
+import { type SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
     ArrowUpRight,
@@ -7,8 +8,6 @@ import {
     MapPin,
     MessageCircle,
 } from 'lucide-react';
-
-const whatsappUrl = defaultWhatsAppUrl;
 
 const fadeUp = {
     hidden: {
@@ -28,6 +27,8 @@ const fadeUp = {
 export function Contact() {
     /* En móvil el contenido se muestra ya visible, sin reveal de scroll (ver About). */
     const isMobile = useIsMobile();
+
+    const { site } = usePage<SharedData>().props;
 
     return (
         <section
@@ -142,15 +143,19 @@ export function Contact() {
                             </motion.a>
 
                             {/* Address */}
-                            <motion.div
+                            <motion.a
                                 variants={fadeUp}
-                                className="flex items-center gap-4 rounded-2xl border border-[#7d8f7a]/15 bg-white/70 p-4"
+                                href={site.maps_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Ver la ubicación del consultorio en Google Maps"
+                                className="group flex items-center gap-4 rounded-2xl border border-[#7d8f7a]/15 bg-white/70 p-4 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_15px_40px_rgba(85,72,74,0.08)]"
                             >
-                                <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#7d8f7a]/10 text-[#7d8f7a]">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#7d8f7a]/10 text-[#7d8f7a] transition-colors duration-300 group-hover:bg-[#7d8f7a] group-hover:text-white">
                                     <MapPin className="size-5" />
                                 </div>
 
-                                <div>
+                                <div className="min-w-0 flex-1">
                                     <p className="text-xs font-bold tracking-[0.12em] text-[#7d8f7a] uppercase">
                                         Consultorio
                                     </p>
@@ -163,7 +168,9 @@ export function Contact() {
                                         Santa Rosa del Sur, Bolívar
                                     </p>
                                 </div>
-                            </motion.div>
+
+                                <ArrowUpRight className="size-4 shrink-0 text-[#706a67] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#7d8f7a]" />
+                            </motion.a>
                         </div>
                     </motion.div>
 
@@ -217,7 +224,11 @@ export function Contact() {
                         </motion.div>
 
                         {/* Sage floating badge */}
-                        <motion.div
+                        <motion.a
+                            href={site.maps_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Abrir la ubicación del consultorio en Google Maps"
                             initial={{ opacity: 0, scale: 0.8 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
@@ -225,7 +236,7 @@ export function Contact() {
                                 duration: 0.6,
                                 delay: 0.45,
                             }}
-                            className="absolute -right-3 -top-5 flex size-24 items-center justify-center rounded-full bg-[#7d8f7a] shadow-[0_15px_35px_rgba(85,72,74,0.12)] sm:-right-6 sm:-top-6 sm:size-28"
+                            className="absolute -right-3 -top-5 flex size-24 items-center justify-center rounded-full bg-[#7d8f7a] shadow-[0_15px_35px_rgba(85,72,74,0.12)] transition-transform duration-300 hover:-translate-y-0.5 sm:-right-6 sm:-top-6 sm:size-28"
                         >
                             <div className="text-center text-white">
                                 <MapPin className="mx-auto mb-1 size-4" />
@@ -236,7 +247,7 @@ export function Contact() {
                                     aquí
                                 </p>
                             </div>
-                        </motion.div>
+                        </motion.a>
 
                         {/* Decorative border */}
                         <div className="pointer-events-none absolute -bottom-5 -right-5 -z-10 h-full w-full rounded-[32px] border border-[#d99aa8]/30" />

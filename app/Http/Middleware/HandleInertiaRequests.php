@@ -45,6 +45,14 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'site' => [
+                'url' => config('site.url'),
+                'name' => config('site.name'),
+                'phone' => config('site.phone'),
+                'maps_url' => config('site.maps_url'),
+                'seo' => config('site.seo'),
+                'professional' => config('site.professional'),
+            ],
             'flash' => [
                 'type' => $request->session()->get('flash.type'),
                 'message' => $request->session()->get('flash.message'),

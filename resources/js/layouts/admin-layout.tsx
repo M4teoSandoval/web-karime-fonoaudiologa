@@ -38,7 +38,10 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
 
     return (
         <div className="min-h-screen bg-[#fcf9f7] text-[#373432]">
-            <Head title={title ? `${title} · Karime Sandoval` : 'Karime Sandoval'} />
+            <Head title={title ? `${title} · Karime Sandoval` : 'Karime Sandoval'}>
+                {/* El panel es privado: nunca debe indexarse. */}
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             {/* =================================================
                 HEADER

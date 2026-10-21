@@ -16,6 +16,19 @@ export interface Service {
  */
 export const services: Service[] = [
     {
+        title: 'Protectores auditivos',
+        shortDescription:
+            'Protectores auditivos elaborados a la medida de tus oídos para brindar comodidad y protección según tus necesidades. Ideales para diferentes actividades, como exposición al ruido, descanso, contacto con el agua y viajes en avión, según el tipo de protector.',
+        details: [
+            'Elaborados a la medida de tus oídos.',
+            'Comodidad y protección según tus necesidades.',
+            'Exposición al ruido.',
+            'Descanso, contacto con el agua y viajes en avión, según el tipo de protector.',
+        ],
+        icon: Headphones,
+        color: 'sage',
+    },
+    {
         title: 'Limpieza de Oídos',
         shortDescription:
             'Procedimiento de higiene y limpieza del conducto auditivo externo para la eliminación de acumulación de cerumen, realizado de manera segura y profesional.',
@@ -81,19 +94,6 @@ export const services: Service[] = [
         color: 'pink',
     },
     {
-        title: 'Protectores auditivos',
-        shortDescription:
-            'Protectores auditivos elaborados a la medida de tus oídos para brindar comodidad y protección según tus necesidades. Ideales para diferentes actividades, como exposición al ruido, descanso, contacto con el agua y viajes en avión, según el tipo de protector.',
-        details: [
-            'Elaborados a la medida de tus oídos.',
-            'Comodidad y protección según tus necesidades.',
-            'Exposición al ruido.',
-            'Descanso, contacto con el agua y viajes en avión, según el tipo de protector.',
-        ],
-        icon: Headphones,
-        color: 'sage',
-    },
-    {
         title: 'Evaluación e Intervención en Lectoescritura',
         shortDescription:
             'Dirigida a niños que presentan dificultades para aprender a leer y escribir, reconocer letras y sonidos, formar palabras, leer con fluidez o comprender textos. A través de la evaluación e intervención fonoaudiológica, fortalecemos las habilidades del lenguaje necesarias para el aprendizaje.',
@@ -110,3 +110,10 @@ export const services: Service[] = [
 
 /** Nombres exactos de los servicios, usados en el formulario de agendamiento. */
 export const serviceNames: string[] = services.map((service) => service.title);
+
+/**
+ * Opción del formulario que permite al paciente escribir un servicio
+ * distinto al catálogo oficial. Debe coincidir con
+ * App\Models\AppointmentRequest::OTHER_SERVICE.
+ */
+export const OTHER_SERVICE_OPTION = 'Otro servicio';

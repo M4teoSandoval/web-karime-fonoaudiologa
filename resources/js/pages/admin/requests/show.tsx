@@ -2,10 +2,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
-import { buildProposalWhatsAppUrl, formatDate, formatDateTime, formatTime, statusBadgeClasses, statusLabels } from '@/lib/appointments';
+import { formatDate, formatDateTime, formatTime, statusBadgeClasses, statusLabels } from '@/lib/appointments';
+import { copyToClipboard } from '@/lib/clipboard';
 import { type AppointmentRequest, type ProposedSlot } from '@/types';
 import { Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, CalendarSearch, Check, LoaderCircle, MessageCircle, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, CalendarSearch, Check, ClipboardCheck, Copy, LoaderCircle, Save, Trash2 } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 
 interface RequestShowProps {
@@ -14,6 +15,8 @@ interface RequestShowProps {
 }
 
 const durationOptions = [15, 20, 30, 45, 60, 75, 90, 120, 150, 180];
+
+type CopyTarget = 'proposal' | 'confirmation';
 
 function localTodayIso(): string {
     const today = new Date();
@@ -27,6 +30,7 @@ export default function RequestShow({ appointment }: RequestShowProps) {
     const [selected, setSelected] = useState<string[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [slotsError, setSlotsError] = useState<string | null>(null);
+    const [copied, setCopied] = useState<CopyTarget | null>(null);
 
     const { data, setData, patch, processing, errors } = useForm({
         duration_minutes: appointment.duration_minutes,
@@ -116,9 +120,24 @@ export default function RequestShow({ appointment }: RequestShowProps) {
         router.post(route('admin.requests.cancel', appointment.id), {}, { preserveScroll: true });
     };
 
-    const proposalUrl = appointment.proposed_slots?.length
-        ? buildProposalWhatsAppUrl(appointment.patient_name, appointment.proposed_slots)
-        : null;
+    const proposalMessage = appointment.proposal_message ?? null;
+    const confirmationMessage = appointment.confirmation_message ?? null;
+
+    /**
+     * Copia un mensaje al portapapeles. Solo actúa sobre el portapapeles:
+     * no modifica el estado de la cita.
+     */
+    const handleCopy = async (target: CopyTarget, message: string) => {
+        const ok = await copyToClipboard(message);
+
+        if (!ok) {
+            return;
+        }
+
+        setCopied(target);
+
+        window.setTimeout(() => setCopied((current) => (current === target ? null : current)), 2500);
+    };
 
     const effectiveDuration = data.duration_minutes;
 
@@ -243,7 +262,8 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                             </h2>
 
                             <p className="mt-1 text-sm text-[#706a67]">
-                                Envía las opciones por WhatsApp y, cuando el paciente responda, confirma el horario acordado desde aquí.
+                                Copia el mensaje y envíalo al paciente por el canal que prefieras. Cuando responda, confirma el horario acordado
+                                desde aquí.
                             </p>
 
                             <ul className="mt-4 space-y-2">
@@ -279,25 +299,20 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                                 })}
                             </ul>
 
-                            {proposalUrl && appointment.status !== 'cancelled' && (
+                            {proposalMessage && appointment.status !== 'cancelled' && (
                                 <div className="mt-5 rounded-xl bg-[#f4e7e8]/60 p-4">
                                     <p className="text-xs font-bold tracking-wide text-[#c98796] uppercase">Mensaje para el paciente</p>
 
-                                    <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#373432]">
-                                        {`Hola, tengo disponibles las siguientes opciones para tu cita:\n\n${appointment.proposed_slots
-                                            .map((slot) => `- ${formatDateTime(slot.start)}`)
-                                            .join('\n')}\n\n¿Cuál te queda mejor? Muchas gracias.`}
-                                    </p>
+                                    <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#373432]">{proposalMessage}</p>
 
-                                    <a
-                                        href={proposalUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#25d366] px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5"
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleCopy('proposal', proposalMessage)}
+                                        className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#373432] px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#4d4744]"
                                     >
-                                        <MessageCircle className="size-4" />
-                                        Enviar por WhatsApp
-                                    </a>
+                                        {copied === 'proposal' ? <ClipboardCheck className="size-4" /> : <Copy className="size-4" />}
+                                        {copied === 'proposal' ? 'Mensaje copiado' : 'Copiar mensaje'}
+                                    </Button>
                                 </div>
                             )}
                         </section>
@@ -315,6 +330,23 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                             <p className="mt-1 text-sm text-[#706a67]">
                                 Duración: {appointment.duration_minutes} minutos. El horario está reservado en tu agenda.
                             </p>
+
+                            {confirmationMessage && (
+                                <div className="mt-5 rounded-xl bg-white/70 p-4">
+                                    <p className="text-xs font-bold tracking-wide text-[#6f826c] uppercase">Mensaje de confirmación</p>
+
+                                    <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#373432]">{confirmationMessage}</p>
+
+                                    <Button
+                                        type="button"
+                                        onClick={() => handleCopy('confirmation', confirmationMessage)}
+                                        className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#7d8f7a] px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#6f826c]"
+                                    >
+                                        {copied === 'confirmation' ? <ClipboardCheck className="size-4" /> : <Copy className="size-4" />}
+                                        {copied === 'confirmation' ? 'Mensaje copiado' : 'Copiar mensaje'}
+                                    </Button>
+                                </div>
+                            )}
                         </section>
                     )}
                 </div>

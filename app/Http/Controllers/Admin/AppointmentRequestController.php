@@ -55,7 +55,7 @@ class AppointmentRequestController extends Controller
     public function show(AppointmentRequest $appointment): Response
     {
         return Inertia::render('admin/requests/show', [
-            'appointment' => $this->present($appointment, includeNotes: true),
+            'appointment' => $this->present($appointment, includeNotes: true, includeMessages: true),
             'services' => AppointmentRequest::SERVICES,
         ]);
     }
@@ -96,7 +96,11 @@ class AppointmentRequestController extends Controller
 
         foreach ($validated['slots'] as $start) {
             $startAt = Carbon::parse($start);
-            $endAt = $startAt->addMinutes($appointment->duration_minutes);
+
+            // Se clona la fecha porque Carbon muta la instancia original: sin
+            // el clon, $startAt quedaría desplazado a la hora de fin y se
+            // guardarían (y validarían) horarios equivocados.
+            $endAt = (clone $startAt)->addMinutes($appointment->duration_minutes);
 
             if (! $this->availability->isSlotAvailable($startAt->format('Y-m-d H:i:s'), $appointment->duration_minutes, $appointment->id)) {
                 return back()->with('flash', [
@@ -120,7 +124,7 @@ class AppointmentRequestController extends Controller
 
         return back()->with('flash', [
             'type' => 'success',
-            'message' => 'Horarios propuestos guardados. Ya puedes preparar el mensaje de WhatsApp.',
+            'message' => 'Horarios propuestos guardados. Ya puedes revisar y copiar el mensaje para el paciente.',
         ]);
     }
 
@@ -206,7 +210,7 @@ class AppointmentRequestController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function present(AppointmentRequest $appointment, bool $includeNotes = false): array
+    private function present(AppointmentRequest $appointment, bool $includeNotes = false, bool $includeMessages = false): array
     {
         return [
             'id' => $appointment->id,
@@ -220,6 +224,17 @@ class AppointmentRequestController extends Controller
             'notes' => $includeNotes ? $appointment->notes : null,
             'created_at' => $appointment->created_at?->toDateTimeString(),
             'updated_at' => $appointment->updated_at?->toDateTimeString(),
+
+            /*
+                Mensajes listos para revisar y copiar. Se generan con los datos
+                reales de la cita (nombre del paciente y horarios confirmados).
+            */
+            'proposal_message' => $includeMessages && $appointment->hasProposedSlots()
+                ? AppointmentRequest::buildProposalMessage($appointment->patient_name, $appointment->proposed_slots ?? [])
+                : null,
+            'confirmation_message' => $includeMessages && $appointment->confirmed_start
+                ? AppointmentRequest::buildConfirmationMessage($appointment->patient_name, $appointment->confirmed_start->toDateTimeString())
+                : null,
         ];
     }
 }

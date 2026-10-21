@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { serviceNames } from '@/data/services';
+import { OTHER_SERVICE_OPTION, serviceNames } from '@/data/services';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { type SharedData } from '@/types';
 import { useForm, usePage } from '@inertiajs/react';
@@ -29,6 +29,7 @@ const fadeUp: Variants = {
 interface ClientErrors {
     patient_name?: string;
     service?: string;
+    custom_service?: string;
 }
 
 const steps = [
@@ -49,6 +50,7 @@ export function Booking() {
     const { data, setData, post, processing, errors, reset } = useForm({
         patient_name: '',
         service: '',
+        custom_service: '',
     });
 
     useEffect(() => {
@@ -58,6 +60,8 @@ export function Booking() {
         }
     }, [flash?.whatsapp_url]);
 
+    const isCustomService = data.service === OTHER_SERVICE_OPTION;
+
     const validate = (): boolean => {
         const next: ClientErrors = {};
 
@@ -65,8 +69,13 @@ export function Booking() {
             next.patient_name = 'Por favor escribe tu nombre.';
         }
 
-        if (!serviceNames.includes(data.service)) {
+        if (!serviceNames.includes(data.service) && data.service !== OTHER_SERVICE_OPTION) {
             next.service = 'Por favor selecciona un servicio.';
+        }
+
+        // Si eligió "Otro servicio" debe describir qué necesita.
+        if (isCustomService && data.custom_service.trim().length < 3) {
+            next.custom_service = 'Por favor escribe el servicio que necesitas.';
         }
 
         setClientErrors(next);
@@ -242,11 +251,41 @@ export function Booking() {
                                                             {name}
                                                         </SelectItem>
                                                     ))}
+
+                                                    <SelectItem
+                                                        value={OTHER_SERVICE_OPTION}
+                                                        className="rounded-lg text-[15px] font-semibold text-[#c98796]"
+                                                    >
+                                                        {OTHER_SERVICE_OPTION}
+                                                    </SelectItem>
                                                 </SelectContent>
                                             </Select>
 
                                             <InputError message={clientErrors.service ?? errors.service} />
                                         </div>
+
+                                        {/* Custom service (only with the "Otro servicio" option) */}
+                                        {isCustomService && (
+                                            <div className="space-y-2">
+                                                <Label htmlFor="custom_service" className="text-[#373432]">
+                                                    ¿Qué servicio necesitas?
+                                                </Label>
+
+                                                <Input
+                                                    id="custom_service"
+                                                    name="custom_service"
+                                                    type="text"
+                                                    maxLength={100}
+                                                    placeholder="Describe el servicio que necesitas"
+                                                    value={data.custom_service}
+                                                    onChange={(event) => setData('custom_service', event.target.value)}
+                                                    aria-invalid={Boolean(clientErrors.custom_service ?? errors.custom_service)}
+                                                    className="h-12 rounded-xl border-[#ded4d4] bg-[#fcfaf9] px-4 text-[15px] text-[#373432] placeholder:text-[#b3aaa6] focus:border-[#d99aa8] focus:ring-[#d99aa8]"
+                                                />
+
+                                                <InputError message={clientErrors.custom_service ?? errors.custom_service} />
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Submit */}

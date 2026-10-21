@@ -19,12 +19,22 @@ class AppointmentRequestController extends Controller
     {
         $validated = $request->validated();
 
+        /*
+            Si el paciente eligió "Otro servicio", el texto que escribió se
+            guarda en la misma columna "service" (campo de texto ya
+            existente). Así el servicio real queda visible en el panel de
+            administración sin necesidad de modificar la base de datos.
+        */
+        $service = $validated['service'] === AppointmentRequest::OTHER_SERVICE
+            ? $validated['custom_service']
+            : $validated['service'];
+
         try {
             /** @var AppointmentRequest $appointment */
-            $appointment = DB::transaction(function () use ($validated) {
+            $appointment = DB::transaction(function () use ($validated, $service) {
                 return AppointmentRequest::create([
                     'patient_name' => trim($validated['patient_name']),
-                    'service' => $validated['service'],
+                    'service' => $service,
                     'status' => AppointmentRequest::STATUS_PENDING,
                 ]);
             });

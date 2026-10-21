@@ -81,3 +81,114 @@ test('un usuario admin puede acceder al panel', function () {
     $this->actingAs($admin)->get('/admin/agenda')->assertOk();
     $this->actingAs($admin)->get('/admin/horarios')->assertOk();
 });
+
+test('el paciente puede solicitar un servicio personalizado', function () {
+    $this->post('/agendar-cita', [
+        'patient_name' => 'Mateo Sandoval',
+        'service' => AppointmentRequest::OTHER_SERVICE,
+        'custom_service' => 'Drenaje lingual',
+    ]);
+
+    $this->assertDatabaseHas('appointment_requests', [
+        'patient_name' => 'Mateo Sandoval',
+        'service' => 'Drenaje lingual',
+        'status' => AppointmentRequest::STATUS_PENDING,
+    ]);
+
+    $flash = session('flash');
+
+    expect($flash['type'])->toBe('success');
+    expect(rawurldecode($flash['whatsapp_url']))->toContain('Drenaje lingual');
+});
+
+test('el servicio personalizado es obligatorio cuando se elige "Otro servicio"', function () {
+    $this->from('/')->post('/agendar-cita', [
+        'patient_name' => 'Mateo Sandoval',
+        'service' => AppointmentRequest::OTHER_SERVICE,
+    ])->assertSessionHasErrors('custom_service');
+
+    $this->assertDatabaseCount('appointment_requests', 0);
+});
+
+test('un texto vacío o con solo espacios no cuenta como servicio personalizado', function () {
+    $this->from('/')->post('/agendar-cita', [
+        'patient_name' => 'Mateo Sandoval',
+        'service' => AppointmentRequest::OTHER_SERVICE,
+        'custom_service' => '   ',
+    ])->assertSessionHasErrors('custom_service');
+
+    $this->assertDatabaseCount('appointment_requests', 0);
+});
+
+test('un servicio del catálogo ignora el campo de servicio personalizado', function () {
+    $this->post('/agendar-cita', [
+        'patient_name' => 'María Pérez',
+        'service' => 'Terapia de Lenguaje',
+        'custom_service' => '',
+    ])->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('appointment_requests', [
+        'patient_name' => 'María Pérez',
+        'service' => 'Terapia de Lenguaje',
+    ]);
+});
+
+test('el servicio personalizado se limita a 100 caracteres', function () {
+    $this->from('/')->post('/agendar-cita', [
+        'patient_name' => 'Mateo Sandoval',
+        'service' => AppointmentRequest::OTHER_SERVICE,
+        'custom_service' => str_repeat('a', 101),
+    ])->assertSessionHasErrors('custom_service');
+
+    $this->assertDatabaseCount('appointment_requests', 0);
+});
+
+test('los protectores auditivos son el primer servicio del catálogo', function () {
+    expect(AppointmentRequest::SERVICES[0])->toBe('Protectores auditivos');
+});
+
+test('el sitemap está disponible con URLs absolutas y sin rutas privadas', function () {
+    $response = $this->get('/sitemap.xml');
+
+    $response->assertOk();
+
+    $xml = $response->getContent();
+
+    expect($xml)->toContain('<loc>https://fonoaudiokarime.com/</loc>');
+    expect($xml)->not->toContain('/admin');
+    expect($xml)->not->toContain('/login');
+    expect($xml)->not->toContain('http://localhost');
+
+    $parsed = simplexml_load_string($xml);
+
+    expect($parsed)->not->toBeFalse();
+    expect(count($parsed->url))->toBe(1);
+});
+
+test('el robots.txt permite rastrear el sitio y apunta al sitemap', function () {
+    $robots = file_get_contents(public_path('robots.txt'));
+
+    expect($robots)->toContain('User-agent: *');
+    expect($robots)->toContain('Allow: /');
+    expect($robots)->toContain('Sitemap: https://fonoaudiokarime.com/sitemap.xml');
+
+    // No se bloquean los recursos (CSS/JS/fuentes) que Google necesita.
+    expect($robots)->not->toContain('Disallow: /assets');
+    expect($robots)->not->toContain('Disallow: /build');
+    expect($robots)->not->toContain('Disallow: /fonts');
+});
+
+test('la portada renderiza los metadatos SEO en el servidor', function () {
+    $response = $this->get('/');
+
+    $response->assertOk();
+
+    $html = $response->getContent();
+
+    expect($html)->toContain('<html lang="es">');
+    expect($html)->toContain('Karime Sandoval | Fonoaudióloga en Santa Rosa del Sur, Bolívar');
+    expect($html)->toContain('rel="canonical"');
+    expect($html)->toContain('https://fonoaudiokarime.com/');
+    expect($html)->toContain('og:title');
+    expect($html)->not->toContain('noindex');
+});
