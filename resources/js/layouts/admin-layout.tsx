@@ -17,7 +17,7 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ title, children }: AdminLayoutProps) {
-    const { auth, flash } = usePage<SharedData>().props;
+    const { flash } = usePage<SharedData>().props;
     const { url } = usePage();
 
     const [flashVisible, setFlashVisible] = useState(false);
@@ -52,7 +52,7 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
                     <Link href="/admin" className="flex shrink-0 items-center gap-3">
                         <img src="/images/branding/logo-karime-sandoval.png" alt="Karime Sandoval" className="h-10 w-auto" />
 
-                        <span className="hidden text-2xl leading-none font-semibold text-[#373432] sm:block">Karime Sandoval</span>
+                        <span className="hidden font-['Bad_Script'] text-3xl leading-tight font-normal text-[#373432] sm:block">Karime Sandoval</span>
 
                         <span className="hidden rounded-full bg-[#7d8f7a]/12 px-2.5 py-1 text-[10px] font-bold tracking-[0.15em] text-[#6f826c] uppercase lg:block">
                             Panel
@@ -82,7 +82,7 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
 
                     {/* User */}
                     <div className="flex shrink-0 items-center gap-3">
-                        <span className="hidden text-sm font-semibold text-[#706a67] sm:block">{auth.user?.name}</span>
+                        {/* <span className="hidden text-sm font-semibold text-[#706a67] sm:block">{auth.user?.name}</span> */}
 
                         <a
                             href="/"

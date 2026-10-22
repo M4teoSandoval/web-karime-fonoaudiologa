@@ -255,11 +255,11 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
 
     return (
         <AdminLayout title="Horarios de atención">
-            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+            <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
                 {/* =================================================
                     WEEKLY SCHEDULE
                 ================================================= */}
-                <section className="rounded-2xl border border-[#eadedf] bg-white p-6" aria-labelledby="weekly-heading">
+                <section className="min-w-0 rounded-2xl border border-[#eadedf] bg-white p-4 sm:p-6" aria-labelledby="weekly-heading">
                     <div className="flex items-center gap-3">
                         <Clock className="size-5 text-[#7d8f7a]" />
 
@@ -281,13 +281,13 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                 return (
                                     <li
                                         key={schedule.day_of_week}
-                                        className={`rounded-xl border p-4 transition-colors ${
+                                        className={`min-w-0 rounded-xl border p-3 transition-colors sm:p-4 ${
                                             schedule.is_active ? 'border-[#7d8f7a]/30 bg-[#7d8f7a]/6' : 'border-[#eadedf] bg-[#fcfaf9]'
                                         }`}
                                     >
                                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                                             {/* Active toggle */}
-                                            <div className="flex w-40 shrink-0 items-center gap-3 pt-1">
+                                            <div className="flex min-w-0 items-center gap-3 pt-1 sm:w-40 sm:shrink-0">
                                                 <input
                                                     id={`active-${schedule.day_of_week}`}
                                                     type="checkbox"
@@ -305,11 +305,14 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                             </div>
 
                                             {/* Intervals */}
-                                            <div className="flex-1 space-y-3">
+                                            <div className="min-w-0 flex-1 space-y-3">
                                                 {schedule.intervals.map((interval, intervalIndex) => (
-                                                    <div key={`${schedule.day_of_week}-${intervalIndex}`} className="flex items-end gap-3">
-                                                        <div className="flex flex-1 items-end gap-3">
-                                                            <div className="flex-1 space-y-1">
+                                                    <div
+                                                        key={`${schedule.day_of_week}-${intervalIndex}`}
+                                                        className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-2 sm:flex sm:gap-3"
+                                                    >
+                                                        <div className="grid min-w-0 grid-cols-2 items-end gap-2 sm:flex sm:flex-1 sm:gap-3">
+                                                            <div className="min-w-0 space-y-1 sm:flex-1">
                                                                 <label
                                                                     htmlFor={`start-${schedule.day_of_week}-${intervalIndex}`}
                                                                     className="text-[10px] font-bold tracking-wide text-[#7d8f7a] uppercase"
@@ -325,13 +328,13 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                                                     onChange={(event) =>
                                                                         setIntervalValue(index, intervalIndex, 'start_time', event.target.value)
                                                                     }
-                                                                    className="h-10 w-full rounded-lg border border-[#ded4d4] bg-white px-2.5 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                                                    className="h-10 min-w-0 w-full rounded-lg border border-[#ded4d4] bg-white px-1.5 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:px-2.5"
                                                                 />
                                                             </div>
 
-                                                            <span className="pb-2.5 text-[#706a67]">–</span>
+                                                            <span className="hidden pb-2.5 text-[#706a67] sm:inline">–</span>
 
-                                                            <div className="flex-1 space-y-1">
+                                                            <div className="min-w-0 space-y-1 sm:flex-1">
                                                                 <label
                                                                     htmlFor={`end-${schedule.day_of_week}-${intervalIndex}`}
                                                                     className="text-[10px] font-bold tracking-wide text-[#7d8f7a] uppercase"
@@ -347,7 +350,7 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                                                     onChange={(event) =>
                                                                         setIntervalValue(index, intervalIndex, 'end_time', event.target.value)
                                                                     }
-                                                                    className="h-10 w-full rounded-lg border border-[#ded4d4] bg-white px-2.5 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                                                    className="h-10 min-w-0 w-full rounded-lg border border-[#ded4d4] bg-white px-1.5 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:px-2.5"
                                                                 />
                                                             </div>
                                                         </div>
@@ -357,7 +360,7 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                                                 type="button"
                                                                 onClick={() => removeInterval(index, intervalIndex)}
                                                                 aria-label={`Eliminar horario de ${dayInfo.day_name}`}
-                                                                className="mb-1 shrink-0 rounded-full p-2 text-[#706a67] transition-colors hover:bg-[#fdeef1] hover:text-[#c98796]"
+                                                                className="mb-0.5 shrink-0 rounded-full p-2 text-[#706a67] transition-colors hover:bg-[#fdeef1] hover:text-[#c98796] sm:mb-1"
                                                             >
                                                                 <Trash2 className="size-4" />
                                                             </button>
@@ -425,9 +428,9 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                 {/* =================================================
                     BLOCKS
                 ================================================= */}
-                <div className="space-y-6">
+                <div className="min-w-0 space-y-6">
                     {/* New block */}
-                    <section className="rounded-2xl border border-[#eadedf] bg-white p-6" aria-labelledby="block-heading">
+                    <section className="min-w-0 rounded-2xl border border-[#eadedf] bg-white p-4 sm:p-6" aria-labelledby="block-heading">
                         <div className="flex items-center gap-3">
                             <Ban className="size-5 text-[#d99aa8]" />
 
@@ -452,7 +455,7 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                     required
                                     value={blockForm.data.date}
                                     onChange={(event) => blockForm.setData('date', event.target.value)}
-                                    className="h-11 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-3 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none"
+                                    className="h-11 min-w-0 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-2.5 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none sm:px-3"
                                 />
 
                                 <InputError message={blockForm.errors.date} />
@@ -485,7 +488,7 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                             required
                                             value={blockForm.data.start_time}
                                             onChange={(event) => blockForm.setData('start_time', event.target.value)}
-                                            className="h-11 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-3 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none"
+                                            className="h-11 min-w-0 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-2.5 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none sm:px-3"
                                         />
 
                                         <InputError message={blockForm.errors.start_time} />
@@ -502,7 +505,7 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                             required
                                             value={blockForm.data.end_time}
                                             onChange={(event) => blockForm.setData('end_time', event.target.value)}
-                                            className="h-11 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-3 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none"
+                                            className="h-11 min-w-0 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-2.5 text-sm text-[#373432] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none sm:px-3"
                                         />
 
                                         <InputError message={blockForm.errors.end_time} />
@@ -522,7 +525,7 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                                     placeholder="Ej. Citas personales"
                                     value={blockForm.data.reason}
                                     onChange={(event) => blockForm.setData('reason', event.target.value)}
-                                    className="h-11 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-3 text-sm text-[#373432] placeholder:text-[#b3aaa6] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none"
+                                    className="h-11 min-w-0 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-2.5 text-sm text-[#373432] placeholder:text-[#b3aaa6] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none sm:px-3"
                                 />
                             </div>
 
@@ -538,7 +541,7 @@ export default function Schedule({ schedules, blocks }: ScheduleProps) {
                     </section>
 
                     {/* Existing blocks */}
-                    <section className="rounded-2xl border border-[#eadedf] bg-white p-6" aria-labelledby="blocks-list-heading">
+                    <section className="min-w-0 rounded-2xl border border-[#eadedf] bg-white p-4 sm:p-6" aria-labelledby="blocks-list-heading">
                         <h2 id="blocks-list-heading" className="text-lg font-semibold text-[#373432]">
                             Próximos bloqueos
                         </h2>
