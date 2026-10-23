@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppointmentRequest;
+use App\Rules\MoneyAmount;
 use App\Services\AvailabilityService;
+use App\Support\AppointmentPresenter;
+use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,6 +32,7 @@ class AppointmentRequestController extends Controller
         ]);
 
         $appointments = AppointmentRequest::query()
+            ->withPaidTotal()
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['service'] ?? null, fn ($query, $service) => $query->where('service', $service))
             ->latest()
@@ -35,7 +40,8 @@ class AppointmentRequestController extends Controller
             ->withQueryString();
 
         return Inertia::render('admin/requests/index', [
-            'appointments' => $appointments->getCollection()->map(fn (AppointmentRequest $appointment) => $this->present($appointment)),
+            'appointments' => $appointments->getCollection()
+                ->map(fn (AppointmentRequest $appointment) => AppointmentPresenter::summary($appointment)),
             'pagination' => [
                 'current_page' => $appointments->currentPage(),
                 'last_page' => $appointments->lastPage(),
@@ -50,34 +56,57 @@ class AppointmentRequestController extends Controller
     }
 
     /**
-     * Detalle de una solicitud para gestionarla.
+     * Detalle de una solicitud para gestionarla, con su historial de pagos.
      */
     public function show(AppointmentRequest $appointment): Response
     {
+        $appointment->load([
+            'patient',
+            'payments.recorder:id,name',
+            'payments.voider:id,name',
+        ]);
+
         return Inertia::render('admin/requests/show', [
-            'appointment' => $this->present($appointment, includeNotes: true, includeMessages: true),
+            'appointment' => AppointmentPresenter::detail($appointment),
             'services' => AppointmentRequest::SERVICES,
+            'other_service' => AppointmentRequest::OTHER_SERVICE,
         ]);
     }
 
     /**
-     * Actualiza duración y notas internas de la solicitud.
+     * Actualiza duración, valor acordado y notas internas de la cita.
      */
     public function update(Request $request, AppointmentRequest $appointment): RedirectResponse
     {
         $validated = $request->validate([
             'duration_minutes' => ['required', 'integer', 'min:5', 'max:480'],
+            'service_value' => ['nullable', new MoneyAmount],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
+        $serviceValueCents = Money::toCents($validated['service_value'] ?? null);
+
+        if ($serviceValueCents !== null && $serviceValueCents <= 0) {
+            throw ValidationException::withMessages([
+                'service_value' => 'El valor acordado debe ser mayor que cero.',
+            ]);
+        }
+
+        if ($serviceValueCents !== null && $serviceValueCents < $appointment->totalPaidCents()) {
+            throw ValidationException::withMessages([
+                'service_value' => 'El valor acordado no puede ser menor que lo ya pagado. Anula un pago si necesitas corregir el importe.',
+            ]);
+        }
+
         $appointment->update([
             'duration_minutes' => (int) $validated['duration_minutes'],
+            'service_value_cents' => $serviceValueCents ?? $appointment->service_value_cents,
             'notes' => $validated['notes'] !== null ? trim($validated['notes']) : null,
         ]);
 
         return back()->with('flash', [
             'type' => 'success',
-            'message' => 'Datos de la solicitud actualizados.',
+            'message' => 'Datos de la cita actualizados.',
         ]);
     }
 
@@ -87,6 +116,8 @@ class AppointmentRequestController extends Controller
      */
     public function propose(Request $request, AppointmentRequest $appointment): RedirectResponse
     {
+        $this->ensureManageable($appointment, 'proponer horarios');
+
         $validated = $request->validate([
             'slots' => ['required', 'array', 'min:1', 'max:5'],
             'slots.*' => ['required', 'date'],
@@ -117,9 +148,7 @@ class AppointmentRequestController extends Controller
 
         $appointment->update([
             'proposed_slots' => $slots,
-            'status' => $appointment->status === AppointmentRequest::STATUS_CONFIRMED
-                ? AppointmentRequest::STATUS_CONFIRMED
-                : AppointmentRequest::STATUS_SLOTS_PROPOSED,
+            'status' => AppointmentRequest::STATUS_SLOTS_PROPOSED,
         ]);
 
         return back()->with('flash', [
@@ -134,6 +163,8 @@ class AppointmentRequestController extends Controller
      */
     public function confirm(Request $request, AppointmentRequest $appointment): RedirectResponse
     {
+        $this->ensureManageable($appointment, 'confirmar');
+
         $validated = $request->validate([
             'start' => ['required', 'date'],
         ]);
@@ -185,7 +216,9 @@ class AppointmentRequestController extends Controller
     }
 
     /**
-     * Cancela una solicitud o cita confirmada.
+     * Cancela una solicitud o cita confirmada. Las citas atendidas o las que
+     * ya tienen pagos no se cancelan desde aquí: primero deben corregirse de
+     * forma trazable.
      */
     public function cancel(AppointmentRequest $appointment): RedirectResponse
     {
@@ -196,8 +229,16 @@ class AppointmentRequestController extends Controller
             ]);
         }
 
+        if (in_array($appointment->status, [AppointmentRequest::STATUS_ATTENDED, AppointmentRequest::STATUS_NO_SHOW], true)) {
+            return back()->with('flash', [
+                'type' => 'error',
+                'message' => 'Una cita ya atendida o marcada como no realizada no puede cancelarse.',
+            ]);
+        }
+
         $appointment->update([
             'status' => AppointmentRequest::STATUS_CANCELLED,
+            'cancelled_at' => now(),
             'proposed_slots' => null,
         ]);
 
@@ -208,33 +249,16 @@ class AppointmentRequestController extends Controller
     }
 
     /**
-     * @return array<string, mixed>
+     * Solo las solicitudes pendientes o con horarios propuestos pueden
+     * proponerse o confirmarse. Las citas atendidas, canceladas o no
+     * realizadas conservan su historial intacto.
      */
-    private function present(AppointmentRequest $appointment, bool $includeNotes = false, bool $includeMessages = false): array
+    private function ensureManageable(AppointmentRequest $appointment, string $action): void
     {
-        return [
-            'id' => $appointment->id,
-            'patient_name' => $appointment->patient_name,
-            'service' => $appointment->service,
-            'status' => $appointment->status,
-            'duration_minutes' => $appointment->duration_minutes,
-            'proposed_slots' => $appointment->proposed_slots,
-            'confirmed_start' => $appointment->confirmed_start?->toDateTimeString(),
-            'confirmed_end' => $appointment->confirmed_end?->toDateTimeString(),
-            'notes' => $includeNotes ? $appointment->notes : null,
-            'created_at' => $appointment->created_at?->toDateTimeString(),
-            'updated_at' => $appointment->updated_at?->toDateTimeString(),
-
-            /*
-                Mensajes listos para revisar y copiar. Se generan con los datos
-                reales de la cita (nombre del paciente y horarios confirmados).
-            */
-            'proposal_message' => $includeMessages && $appointment->hasProposedSlots()
-                ? AppointmentRequest::buildProposalMessage($appointment->patient_name, $appointment->proposed_slots ?? [])
-                : null,
-            'confirmation_message' => $includeMessages && $appointment->confirmed_start
-                ? AppointmentRequest::buildConfirmationMessage($appointment->patient_name, $appointment->confirmed_start->toDateTimeString())
-                : null,
-        ];
+        if (! in_array($appointment->status, [AppointmentRequest::STATUS_PENDING, AppointmentRequest::STATUS_SLOTS_PROPOSED], true)) {
+            throw ValidationException::withMessages([
+                'status' => "No es posible {$action} una cita en estado actual.",
+            ]);
+        }
     }
 }

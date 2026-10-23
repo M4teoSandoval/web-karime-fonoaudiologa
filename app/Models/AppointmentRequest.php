@@ -6,6 +6,8 @@ use Database\Factories\AppointmentRequestFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 class AppointmentRequest extends Model
@@ -21,13 +23,49 @@ class AppointmentRequest extends Model
 
     public const STATUS_CANCELLED = 'cancelled';
 
+    public const STATUS_ATTENDED = 'attended';
+
+    public const STATUS_NO_SHOW = 'no_show';
+
     /** @var list<string> */
     public const STATUSES = [
         self::STATUS_PENDING,
         self::STATUS_SLOTS_PROPOSED,
         self::STATUS_CONFIRMED,
+        self::STATUS_ATTENDED,
         self::STATUS_CANCELLED,
+        self::STATUS_NO_SHOW,
     ];
+
+    /**
+     * Estados que ocupan un espacio en la agenda. Una cita atendida o en la
+     * que el paciente no asistió sigue formando parte del historial y no debe
+     * liberar el horario en el pasado.
+     *
+     * @var list<string>
+     */
+    public const OCCUPYING_STATUSES = [
+        self::STATUS_CONFIRMED,
+        self::STATUS_ATTENDED,
+        self::STATUS_NO_SHOW,
+    ];
+
+    public const SOURCE_PUBLIC = 'public';
+
+    public const SOURCE_MANUAL = 'manual';
+
+    /*
+        Estado financiero derivado de los pagos vigentes. Nunca se guarda en
+        la cita: se calcula sumando pagos no anulados para evitar que quede
+        desincronizado del historial real de transacciones.
+    */
+    public const PAYMENT_UNSET = 'unset';
+
+    public const PAYMENT_UNPAID = 'unpaid';
+
+    public const PAYMENT_PARTIAL = 'partial';
+
+    public const PAYMENT_PAID = 'paid';
 
     /**
      * Servicios ofrecidos. Debe mantenerse sincronizado con
@@ -66,14 +104,21 @@ class AppointmentRequest extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'patient_id',
         'patient_name',
+        'patient_phone',
         'service',
         'status',
+        'source',
         'duration_minutes',
+        'service_value_cents',
         'proposed_slots',
         'confirmed_start',
         'confirmed_end',
         'notes',
+        'attended_at',
+        'cancelled_at',
+        'no_show_at',
     ];
 
     /**
@@ -85,20 +130,140 @@ class AppointmentRequest extends Model
     {
         return [
             'duration_minutes' => 'integer',
+            'service_value_cents' => 'integer',
             'proposed_slots' => 'array',
             'confirmed_start' => 'datetime',
             'confirmed_end' => 'datetime',
+            'attended_at' => 'datetime',
+            'cancelled_at' => 'datetime',
+            'no_show_at' => 'datetime',
         ];
     }
 
     /**
-     * Scope: solicitudes que ocupan espacio definitivo en la agenda.
+     * @return BelongsTo<Patient, $this>
+     */
+    public function patient(): BelongsTo
+    {
+        return $this->belongsTo(Patient::class);
+    }
+
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'appointment_id');
+    }
+
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function activePayments(): HasMany
+    {
+        return $this->payments()->whereNull('voided_at');
+    }
+
+    /**
+     * Scope: citas que ocupan espacio definitivo en la agenda. Incluye las
+     * atendidas y las no realizadas para conservar el historial y evitar que
+     * un cambio de estado libere por error un horario pasado.
      */
     public function scopeOccupying(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_CONFIRMED)
+        return $query->whereIn('status', self::OCCUPYING_STATUSES)
             ->whereNotNull('confirmed_start')
             ->whereNotNull('confirmed_end');
+    }
+
+    /**
+     * Citas que todavía representan un valor por cobrar. Las canceladas y
+     * las no realizadas se excluyen por defecto.
+     */
+    public function scopeChargeable(Builder $query): Builder
+    {
+        return $query->whereNotIn('status', [self::STATUS_CANCELLED, self::STATUS_NO_SHOW]);
+    }
+
+    /**
+     * Carga el total pagado (solo pagos vigentes) como atributo "paid_cents".
+     */
+    public function scopeWithPaidTotal(Builder $query): Builder
+    {
+        return $query->withSum(
+            ['payments as paid_cents' => fn (Builder $query) => $query->whereNull('voided_at')],
+            'amount_cents',
+        );
+    }
+
+    /**
+     * Total pagado hasta el momento, en centavos.
+     */
+    public function totalPaidCents(): int
+    {
+        $loaded = $this->getAttribute('paid_cents');
+
+        if ($loaded !== null) {
+            return (int) $loaded;
+        }
+
+        if ($this->relationLoaded('payments')) {
+            return (int) $this->payments
+                ->whereNull('voided_at')
+                ->sum('amount_cents');
+        }
+
+        return (int) $this->activePayments()->sum('amount_cents');
+    }
+
+    /**
+     * Saldo pendiente en centavos. Null cuando aún no se ha definido el valor
+     * acordado del servicio.
+     */
+    public function balanceCents(): ?int
+    {
+        if ($this->service_value_cents === null) {
+            return null;
+        }
+
+        return max(0, (int) $this->service_value_cents - $this->totalPaidCents());
+    }
+
+    /**
+     * Estado financiero derivado: unset | unpaid | partial | paid.
+     */
+    public function paymentStatus(): string
+    {
+        if ($this->service_value_cents === null || $this->service_value_cents <= 0) {
+            return self::PAYMENT_UNSET;
+        }
+
+        $paid = $this->totalPaidCents();
+
+        if ($paid <= 0) {
+            return self::PAYMENT_UNPAID;
+        }
+
+        if ($paid < (int) $this->service_value_cents) {
+            return self::PAYMENT_PARTIAL;
+        }
+
+        return self::PAYMENT_PAID;
+    }
+
+    public function isAttended(): bool
+    {
+        return $this->status === self::STATUS_ATTENDED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    public function isNoShow(): bool
+    {
+        return $this->status === self::STATUS_NO_SHOW;
     }
 
     /**

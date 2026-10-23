@@ -87,25 +87,99 @@ export interface User {
    Sistema de gestión de citas
 ================================================= */
 
-export type AppointmentStatus = 'pending' | 'slots_proposed' | 'confirmed' | 'cancelled';
+export type AppointmentStatus = 'pending' | 'slots_proposed' | 'confirmed' | 'attended' | 'cancelled' | 'no_show';
+
+export type PaymentStatus = 'unset' | 'unpaid' | 'partial' | 'paid';
+
+export type PaymentMethod = 'cash' | 'transfer' | 'card' | 'other';
 
 export interface ProposedSlot {
     start: string;
     end: string;
 }
 
+export interface PatientSummary {
+    id: number;
+    name: string;
+    phone: string | null;
+    created_at?: string | null;
+}
+
+export interface PatientListItem extends PatientSummary {
+    appointments_count: number;
+    last_appointment_at: string | null;
+    total_paid_cents: number;
+    outstanding_cents: number;
+}
+
+export interface Payment {
+    id: number;
+    appointment_id: number;
+    amount_cents: number;
+    paid_on: string;
+    method: PaymentMethod | null;
+    notes: string | null;
+    recorded_by_name: string | null;
+    voided_at: string | null;
+    void_reason: string | null;
+    voided_by_name: string | null;
+    created_at: string | null;
+    appointment?: {
+        id: number;
+        service: string;
+        confirmed_start: string | null;
+        patient_name: string;
+    } | null;
+}
+
+export interface PatientNoteRevision {
+    id: number;
+    body: string;
+    edited_by_name: string | null;
+    created_at: string | null;
+}
+
+export interface PatientNote {
+    id: number;
+    body: string;
+    noted_at: string;
+    created_at: string | null;
+    updated_at: string | null;
+    author_name: string | null;
+    appointment: {
+        id: number;
+        service: string;
+        confirmed_start: string | null;
+    } | null;
+    revisions: PatientNoteRevision[];
+}
+
 export interface AppointmentRequest {
     id: number;
+    patient_id: number | null;
     patient_name: string;
+    patient_phone: string | null;
     service: string;
     status: AppointmentStatus;
+    source: 'public' | 'manual';
     duration_minutes: number;
-    proposed_slots: ProposedSlot[] | null;
+    service_value_cents: number | null;
+    total_paid_cents: number;
+    balance_cents: number | null;
+    payment_status: PaymentStatus;
     confirmed_start: string | null;
     confirmed_end: string | null;
-    notes: string | null;
+    attended_at: string | null;
+    cancelled_at: string | null;
+    no_show_at: string | null;
     created_at: string;
     updated_at?: string | null;
+
+    /* Presentes en el detalle de la cita. */
+    proposed_slots?: ProposedSlot[] | null;
+    notes?: string | null;
+    patient?: PatientSummary | null;
+    payments?: Payment[];
 
     /* Mensajes generados por el servidor con los datos reales de la cita. */
     proposal_message?: string | null;
@@ -137,13 +211,9 @@ export interface AvailabilityBlockItem {
     reason: string | null;
 }
 
-export interface AgendaAppointmentItem {
-    id: number;
-    patient_name: string;
-    service: string;
-    duration_minutes: number;
-    start: string;
-    end: string;
+export interface AgendaAppointmentItem extends AppointmentRequest {
+    start: string | null;
+    end: string | null;
 }
 
 export interface AgendaDay {
@@ -159,4 +229,11 @@ export interface AgendaDay {
         end_time: string | null;
         reason: string | null;
     }[];
+}
+
+export interface DashboardMonthSummary {
+    period: string;
+    label: string;
+    income_cents: number;
+    attended_count: number;
 }

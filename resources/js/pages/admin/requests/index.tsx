@@ -1,6 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/admin-layout';
-import { formatDate, statusBadgeClasses, statusLabels } from '@/lib/appointments';
+import {
+    formatDate,
+    paymentStatusBadgeClasses,
+    paymentStatusLabels,
+    statusBadgeClasses,
+    statusLabels,
+} from '@/lib/appointments';
+import { formatMoney } from '@/lib/money';
 import { type AppointmentRequest, type AppointmentStatus, type PaginationMeta } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { ArrowUpRight, ChevronLeft, ChevronRight, Search } from 'lucide-react';
@@ -99,6 +106,23 @@ export default function RequestsIndex({ appointments, pagination, filters, servi
                                     </p>
 
                                     <p className="mt-0.5 text-xs text-[#706a67]">Registrada el {formatDate(appointment.created_at)}</p>
+
+                                    {appointment.service_value_cents !== null && (
+                                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                                            <Badge
+                                                variant="secondary"
+                                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
+                                            >
+                                                {paymentStatusLabels[appointment.payment_status]}
+                                            </Badge>
+
+                                            {appointment.balance_cents !== null && appointment.balance_cents > 0 && (
+                                                <span className="text-xs font-semibold text-[#c98796]">
+                                                    Saldo {formatMoney(appointment.balance_cents)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex shrink-0 items-center gap-4">

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\AppointmentRequest;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
 
 /**
  * @extends Factory<AppointmentRequest>
@@ -40,7 +41,7 @@ class AppointmentRequestFactory extends Factory
             'status' => AppointmentRequest::STATUS_CONFIRMED,
             'duration_minutes' => $durationMinutes,
             'confirmed_start' => $start,
-            'confirmed_end' => \Illuminate\Support\Carbon::parse($start)->addMinutes($durationMinutes),
+            'confirmed_end' => Carbon::parse($start)->addMinutes($durationMinutes),
         ]);
     }
 }

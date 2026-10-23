@@ -1,16 +1,22 @@
+import NewAppointmentDialog from '@/components/admin/new-appointment-dialog';
+import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/admin-layout';
+import { paymentStatusBadgeClasses, paymentStatusLabels, statusBadgeClasses, statusLabels } from '@/lib/appointments';
+import { formatMoney } from '@/lib/money';
 import { type AgendaDay } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { Ban, CalendarX, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { Ban, CalendarDays, CalendarX, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface AgendaProps {
     weekStart: string;
     previousWeekStart: string;
     nextWeekStart: string;
     days: AgendaDay[];
+    services: string[];
+    otherService: string;
 }
 
-export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, days }: AgendaProps) {
+export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, days, services, otherService }: AgendaProps) {
     const navigateToWeek = (start: string) => {
         router.get('/admin/agenda', { start }, { preserveState: true, preserveScroll: true });
     };
@@ -23,8 +29,8 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
     return (
         <AdminLayout title="Agenda">
             {/* Week navigation */}
-            <div className="mb-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-between sm:gap-4">
-                <div className="flex items-center gap-2">
+            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
                     <button
                         type="button"
                         onClick={() => navigateToWeek(previousWeekStart)}
@@ -45,21 +51,21 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
                             Volver a hoy
                         </button>
                     )}
+
+                    <button
+                        type="button"
+                        onClick={() => navigateToWeek(nextWeekStart)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#eadedf] bg-white px-4 py-2 text-sm font-semibold text-[#706a67] transition-colors hover:border-[#d99aa8] hover:text-[#d99aa8]"
+                    >
+                        <span className="sm:hidden">Siguiente</span>
+                        <span className="hidden sm:inline">Semana siguiente</span>
+                        <ChevronRight className="size-4" />
+                    </button>
                 </div>
 
-                <p className="text-sm font-bold text-[#373432]">
-                    Semana del {weekStart.split('-').reverse().join('/')}
-                </p>
+                <p className="text-sm font-bold text-[#373432]">Semana del {weekStart.split('-').reverse().join('/')}</p>
 
-                <button
-                    type="button"
-                    onClick={() => navigateToWeek(nextWeekStart)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#eadedf] bg-white px-4 py-2 text-sm font-semibold text-[#706a67] transition-colors hover:border-[#d99aa8] hover:text-[#d99aa8]"
-                >
-                    <span className="sm:hidden">Siguiente</span>
-                    <span className="hidden sm:inline">Semana siguiente</span>
-                    <ChevronRight className="size-4" />
-                </button>
+                <NewAppointmentDialog services={services} otherService={otherService} />
             </div>
 
             {/* Days */}
@@ -123,15 +129,41 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
                                                 href={`/admin/solicitudes/${appointment.id}`}
                                                 className="block rounded-xl border border-[#7d8f7a]/25 bg-[#7d8f7a]/8 px-3.5 py-3 transition-colors hover:bg-[#7d8f7a]/15"
                                             >
-                                                <p className="text-sm font-bold text-[#51634e]">
-                                                    {appointment.start} – {appointment.end}
-                                                </p>
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <p className="text-sm font-bold text-[#51634e]">
+                                                        {appointment.start} – {appointment.end}
+                                                    </p>
 
-                                                <p className="mt-0.5 truncate text-sm font-semibold text-[#373432]">{appointment.patient_name}</p>
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${statusBadgeClasses[appointment.status]}`}
+                                                    >
+                                                        {statusLabels[appointment.status]}
+                                                    </Badge>
+                                                </div>
+
+                                                <p className="mt-1 truncate text-sm font-semibold text-[#373432]">{appointment.patient_name}</p>
 
                                                 <p className="mt-0.5 truncate text-xs text-[#706a67]">
                                                     {appointment.service} · {appointment.duration_minutes} min
                                                 </p>
+
+                                                {appointment.service_value_cents !== null && (
+                                                    <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
+                                                        >
+                                                            {paymentStatusLabels[appointment.payment_status]}
+                                                        </Badge>
+
+                                                        {appointment.balance_cents !== null && appointment.balance_cents > 0 && (
+                                                            <span className="text-[11px] font-semibold text-[#c98796]">
+                                                                Debe {formatMoney(appointment.balance_cents)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </Link>
                                         </li>
                                     ))}

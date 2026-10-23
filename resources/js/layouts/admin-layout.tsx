@@ -1,13 +1,14 @@
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CalendarDays, ClipboardList, Clock, ExternalLink, LayoutGrid, LogOut, X } from 'lucide-react';
+import { CalendarDays, ClipboardList, Clock, ExternalLink, LayoutGrid, LogOut, Users, X } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 
 const navItems = [
     { title: 'Resumen', href: '/admin', icon: LayoutGrid, exact: true },
     { title: 'Solicitudes', href: '/admin/solicitudes', icon: ClipboardList, exact: false },
     { title: 'Agenda', href: '/admin/agenda', icon: CalendarDays, exact: false },
+    { title: 'Pacientes', href: '/admin/pacientes', icon: Users, exact: false },
     { title: 'Horarios', href: '/admin/horarios', icon: Clock, exact: false },
 ];
 

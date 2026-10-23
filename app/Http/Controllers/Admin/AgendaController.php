@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AppointmentRequest;
 use App\Models\AvailabilityBlock;
 use App\Models\WorkSchedule;
+use App\Support\AppointmentPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -31,6 +32,7 @@ class AgendaController extends Controller
 
         $appointments = AppointmentRequest::query()
             ->occupying()
+            ->withPaidTotal()
             ->whereBetween('confirmed_start', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
             ->orderBy('confirmed_start')
             ->get();
@@ -70,10 +72,7 @@ class AgendaController extends Controller
                     ->filter(fn (AppointmentRequest $appointment) => $appointment->confirmed_start?->isSameDay($day))
                     ->values()
                     ->map(fn (AppointmentRequest $appointment) => [
-                        'id' => $appointment->id,
-                        'patient_name' => $appointment->patient_name,
-                        'service' => $appointment->service,
-                        'duration_minutes' => $appointment->duration_minutes,
+                        ...AppointmentPresenter::summary($appointment),
                         'start' => $appointment->confirmed_start?->format('H:i'),
                         'end' => $appointment->confirmed_end?->format('H:i'),
                     ]),
@@ -95,6 +94,8 @@ class AgendaController extends Controller
             'previousWeekStart' => $start->copy()->subWeek()->toDateString(),
             'nextWeekStart' => $start->copy()->addWeek()->toDateString(),
             'days' => $days,
+            'services' => AppointmentRequest::SERVICES,
+            'otherService' => AppointmentRequest::OTHER_SERVICE,
         ]);
     }
 }
