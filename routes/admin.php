@@ -35,6 +35,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::patch('solicitudes/{appointment}', [AppointmentRequestController::class, 'update'])->name('admin.requests.update');
     Route::post('solicitudes/{appointment}/proponer', [AppointmentRequestController::class, 'propose'])->name('admin.requests.propose');
     Route::post('solicitudes/{appointment}/confirmar', [AppointmentRequestController::class, 'confirm'])->name('admin.requests.confirm');
+    Route::post('solicitudes/{appointment}/reprogramar', [AppointmentController::class, 'reschedule'])->name('admin.requests.reschedule');
     Route::post('solicitudes/{appointment}/cancelar', [AppointmentRequestController::class, 'cancel'])->name('admin.requests.cancel');
     Route::post('solicitudes/{appointment}/atender', [AppointmentController::class, 'markAttended'])->name('admin.requests.attend');
     Route::post('solicitudes/{appointment}/no-realizada', [AppointmentController::class, 'markNoShow'])->name('admin.requests.no-show');

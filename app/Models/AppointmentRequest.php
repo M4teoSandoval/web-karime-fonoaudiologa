@@ -50,6 +50,17 @@ class AppointmentRequest extends Model
         self::STATUS_NO_SHOW,
     ];
 
+    /**
+     * Estados que pueden reprogramarse. Solo una cita ya confirmada tiene un
+     * horario reservado que se pueda mover sin alterar el flujo de la
+     * solicitud (una propuesta pendiente no se confirma automáticamente).
+     *
+     * @var list<string>
+     */
+    public const RESCHEDULABLE_STATUSES = [
+        self::STATUS_CONFIRMED,
+    ];
+
     public const SOURCE_PUBLIC = 'public';
 
     public const SOURCE_MANUAL = 'manual';
@@ -165,6 +176,19 @@ class AppointmentRequest extends Model
     }
 
     /**
+     * Historial completo de reprogramaciones, de la más reciente a la más
+     * antigua. Cada cambio es una fila independiente.
+     *
+     * @return HasMany<AppointmentReschedule, $this>
+     */
+    public function reschedules(): HasMany
+    {
+        return $this->hasMany(AppointmentReschedule::class, 'appointment_id')
+            ->latest('created_at')
+            ->latest('id');
+    }
+
+    /**
      * Scope: citas que ocupan espacio definitivo en la agenda. Incluye las
      * atendidas y las no realizadas para conservar el historial y evitar que
      * un cambio de estado libere por error un horario pasado.
@@ -267,6 +291,18 @@ class AppointmentRequest extends Model
     }
 
     /**
+     * Una cita puede reprogramarse solo si está confirmada y conserva el
+     * horario reservado. Las pendientes, canceladas, atendidas y no
+     * realizadas mantienen su estado y su historial intactos.
+     */
+    public function isReschedulable(): bool
+    {
+        return in_array($this->status, self::RESCHEDULABLE_STATUSES, true)
+            && $this->confirmed_start !== null
+            && $this->confirmed_end !== null;
+    }
+
+    /**
      * Indica si la solicitud tiene horarios propuestos actualmente.
      */
     public function hasProposedSlots(): bool
@@ -313,6 +349,28 @@ class AppointmentRequest extends Model
             .'Te recomendamos llegar 10 minutos antes de tu cita para que podamos atenderte puntualmente.'."\n\n"
             .'Si necesitas cancelar o reprogramar, por favor avísame con anticipación.'."\n\n"
             .'¡Muchas gracias por confiar en nosotros! Te esperamos.';
+    }
+
+    /**
+     * Mensaje de reprogramación listo para copiar y enviar manualmente.
+     *
+     * Incluye el nombre del paciente, la fecha anterior y la nueva fecha y
+     * hora. No se envía automáticamente: la administradora decide cuándo y
+     * por qué canal lo comparte.
+     */
+    public static function buildRescheduleMessage(?string $patientName, string $previousStart, string $newStart): string
+    {
+        $previous = Carbon::parse($previousStart)->locale('es');
+        $new = Carbon::parse($newStart)->locale('es');
+
+        $previousLabel = ucfirst($previous->translatedFormat('l, j \d\e F \d\e Y')).' a las '.$previous->translatedFormat('g:i A');
+        $newLabel = ucfirst($new->translatedFormat('l, j \d\e F \d\e Y')).' a las '.$new->translatedFormat('g:i A');
+
+        return self::greeting($patientName, exclamation: true).'Tu cita con Karime Sandoval fue reprogramada.'."\n\n"
+            ."Fecha anterior: {$previousLabel}\n"
+            ."Nueva fecha: {$newLabel}\n\n"
+            .'Si el nuevo horario no te sirve, por favor avísame para buscar otra opción.'."\n\n"
+            .'¡Gracias por tu comprensión!';
     }
 
     /**

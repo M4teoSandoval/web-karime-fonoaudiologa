@@ -1,5 +1,7 @@
 import AppointmentPayments from '@/components/admin/appointment-payments';
+import AppointmentRescheduleHistory from '@/components/admin/appointment-reschedule-history';
 import PatientFields from '@/components/admin/patient-fields';
+import RescheduleAppointmentDialog from '@/components/admin/reschedule-appointment-dialog';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -337,6 +339,15 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                                 Duración: {appointment.duration_minutes} minutos. El horario está reservado en tu agenda.
                             </p>
 
+                            {appointment.can_reschedule && (
+                                <div className="mt-4">
+                                    <RescheduleAppointmentDialog
+                                        appointment={appointment}
+                                        triggerClassName="rounded-full border-[#51634e] bg-[#51634e] px-5 text-sm font-bold text-white hover:bg-[#455742]"
+                                    />
+                                </div>
+                            )}
+
                             {confirmationMessage && (
                                 <div className="mt-5 rounded-xl bg-white/70 p-4">
                                     <p className="text-xs font-bold tracking-wide text-[#6f826c] uppercase">Mensaje de confirmación</p>
@@ -469,6 +480,9 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                             </form>
                         </section>
                     )}
+
+                    {/* Historial de reprogramaciones (visible también para citas cerradas) */}
+                    <AppointmentRescheduleHistory appointment={appointment} />
 
                     {/* Availability (only before confirmation) */}
                     {isManageable && (

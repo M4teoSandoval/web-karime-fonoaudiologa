@@ -1,4 +1,5 @@
 import NewAppointmentDialog from '@/components/admin/new-appointment-dialog';
+import RescheduleAppointmentDialog from '@/components/admin/reschedule-appointment-dialog';
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/admin-layout';
 import { paymentStatusBadgeClasses, paymentStatusLabels, statusBadgeClasses, statusLabels } from '@/lib/appointments';
@@ -124,7 +125,7 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
                             ) : (
                                 <ul className="mt-4 space-y-2">
                                     {day.appointments.map((appointment) => (
-                                        <li key={appointment.id}>
+                                        <li key={appointment.id} className="space-y-2">
                                             <Link
                                                 href={`/admin/solicitudes/${appointment.id}`}
                                                 className="block rounded-xl border border-[#7d8f7a]/25 bg-[#7d8f7a]/8 px-3.5 py-3 transition-colors hover:bg-[#7d8f7a]/15"
@@ -165,6 +166,13 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
                                                     </div>
                                                 )}
                                             </Link>
+
+                                            {appointment.can_reschedule && (
+                                                <RescheduleAppointmentDialog
+                                                    appointment={appointment}
+                                                    triggerClassName="w-full rounded-full border-[#eadedf] bg-white px-3 text-xs font-bold text-[#706a67] hover:border-[#7d8f7a] hover:text-[#6f826c]"
+                                                />
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

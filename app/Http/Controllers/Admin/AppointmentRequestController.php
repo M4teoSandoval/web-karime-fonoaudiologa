@@ -64,6 +64,7 @@ class AppointmentRequestController extends Controller
             'patient',
             'payments.recorder:id,name',
             'payments.voider:id,name',
+            'reschedules.rescheduledBy:id,name',
         ]);
 
         return Inertia::render('admin/requests/show', [

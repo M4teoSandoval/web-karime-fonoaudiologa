@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\AppointmentRequest;
+use App\Models\AppointmentReschedule;
 use App\Models\Patient;
 use App\Models\Payment;
 use Illuminate\Support\Carbon;
@@ -39,6 +40,7 @@ final class AppointmentPresenter
             'no_show_at' => $appointment->no_show_at?->toDateTimeString(),
             'created_at' => $appointment->created_at?->toDateTimeString(),
             'updated_at' => $appointment->updated_at?->toDateTimeString(),
+            'can_reschedule' => $appointment->isReschedulable(),
         ];
     }
 
@@ -74,7 +76,45 @@ final class AppointmentPresenter
             )
             : null;
 
+        $data['reschedules'] = $appointment->relationLoaded('reschedules')
+            ? $appointment->reschedules
+                ->map(fn (AppointmentReschedule $reschedule) => self::reschedule($reschedule))
+                ->all()
+            : [];
+
+        $latestReschedule = $data['reschedules'][0] ?? null;
+
+        $data['reschedule_message'] = $includeMessages
+            && $latestReschedule !== null
+            && $latestReschedule['previous_start'] !== null
+            && $latestReschedule['new_start'] !== null
+            ? AppointmentRequest::buildRescheduleMessage(
+                $appointment->patient_name,
+                $latestReschedule['previous_start'],
+                $latestReschedule['new_start'],
+            )
+            : null;
+
         return $data;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function reschedule(AppointmentReschedule $reschedule): array
+    {
+        return [
+            'id' => $reschedule->id,
+            'previous_start' => $reschedule->previous_start?->toDateTimeString(),
+            'previous_end' => $reschedule->previous_end?->toDateTimeString(),
+            'new_start' => $reschedule->new_start?->toDateTimeString(),
+            'new_end' => $reschedule->new_end?->toDateTimeString(),
+            'reason' => $reschedule->reason,
+            'rescheduled_at' => $reschedule->created_at?->toDateTimeString(),
+            'rescheduled_by_name' => $reschedule->relationLoaded('rescheduledBy')
+                ? $reschedule->rescheduledBy?->name
+                : null,
+        ];
     }
 
     /**

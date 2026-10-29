@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AssignPatientRequest;
 use App\Http\Requests\Admin\MarkAppointmentAttendedRequest;
+use App\Http\Requests\Admin\RescheduleAppointmentRequest;
 use App\Http\Requests\Admin\StoreManualAppointmentRequest;
 use App\Models\AppointmentRequest;
 use App\Models\Patient;
@@ -116,6 +117,109 @@ class AppointmentController extends Controller
                 'type' => 'success',
                 'message' => 'Cita creada y reservada en la agenda.',
             ]);
+    }
+
+    /**
+     * Reprograma una cita confirmada conservando su paciente, pagos, notas y
+     * estado. El horario anterior se libera y el nuevo se reserva en la misma
+     * transacción, dejando un registro permanente del cambio.
+     */
+    public function reschedule(RescheduleAppointmentRequest $request, AppointmentRequest $appointment): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $startAt = Carbon::parse($validated['date'].' '.$validated['start_time']);
+        $duration = (int) $validated['duration_minutes'];
+        $endAt = (clone $startAt)->addMinutes($duration);
+
+        if ($startAt->lessThan(now()->startOfMinute())) {
+            throw ValidationException::withMessages([
+                'start_time' => 'La nueva hora de la cita ya pasó. Selecciona un horario futuro.',
+            ]);
+        }
+
+        $newStartLabel = $startAt->locale('es')->translatedFormat('l, j \d\e F \d\e Y \a \l\a\s g:i A');
+
+        DB::transaction(function () use ($request, $appointment, $validated, $startAt, $endAt, $duration) {
+            /** @var AppointmentRequest $locked */
+            $locked = AppointmentRequest::query()
+                ->whereKey($appointment->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! $locked->isReschedulable()) {
+                throw ValidationException::withMessages([
+                    'status' => 'Solo las citas confirmadas pueden reprogramarse. Las citas pendientes, canceladas, atendidas o no realizadas conservan su estado actual.',
+                ]);
+            }
+
+            if ($locked->confirmed_start === null || $locked->confirmed_end === null) {
+                throw ValidationException::withMessages([
+                    'status' => 'Esta cita no tiene un horario confirmado que se pueda reprogramar.',
+                ]);
+            }
+
+            // Evita guardar una reprogramación que no cambia nada y que
+            // ensuciaría el historial con un registro vacío.
+            if ($locked->confirmed_start->equalTo($startAt) && $locked->confirmed_end->equalTo($endAt)) {
+                throw ValidationException::withMessages([
+                    'start_time' => 'La cita ya está agendada en esa fecha y hora. Elige un horario diferente.',
+                ]);
+            }
+
+            /*
+                Se bloquean las filas en conflicto y se excluye la propia cita
+                para que su horario anterior no se interprete como ocupado.
+                Así dos reprogramaciones simultáneas no pueden reservar el
+                mismo espacio.
+            */
+            $conflict = AppointmentRequest::query()
+                ->occupying()
+                ->whereKeyNot($locked->getKey())
+                ->where('confirmed_start', '<', $endAt)
+                ->where('confirmed_end', '>', $startAt)
+                ->lockForUpdate()
+                ->exists();
+
+            if ($conflict) {
+                throw ValidationException::withMessages([
+                    'start_time' => 'El nuevo horario se cruza con otra cita confirmada. Elige un espacio diferente.',
+                ]);
+            }
+
+            if (! $this->availability->isSlotAvailable($startAt->format('Y-m-d H:i:s'), $duration, $locked->getKey())) {
+                throw ValidationException::withMessages([
+                    'start_time' => 'El nuevo horario no está dentro de tu jornada de atención o coincide con un bloqueo de agenda. Elige otro espacio.',
+                ]);
+            }
+
+            $previousStart = $locked->confirmed_start->copy();
+            $previousEnd = $locked->confirmed_end->copy();
+
+            // Solo cambia el horario y la duración. El estado, el paciente,
+            // los pagos, el valor acordado y las notas permanecen intactos.
+            $locked->update([
+                'confirmed_start' => $startAt->format('Y-m-d H:i:s'),
+                'confirmed_end' => $endAt->format('Y-m-d H:i:s'),
+                'duration_minutes' => $duration,
+            ]);
+
+            $locked->reschedules()->create([
+                'previous_start' => $previousStart,
+                'previous_end' => $previousEnd,
+                'new_start' => $startAt,
+                'new_end' => $endAt,
+                'reason' => $validated['reason'] !== null && $validated['reason'] !== ''
+                    ? $validated['reason']
+                    : null,
+                'rescheduled_by' => $request->user()?->getKey(),
+            ]);
+        });
+
+        return back()->with('flash', [
+            'type' => 'success',
+            'message' => "Cita reprogramada para el {$newStartLabel}. El horario anterior quedó liberado y el nuevo está reservado.",
+        ]);
     }
 
     /**

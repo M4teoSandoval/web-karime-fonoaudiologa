@@ -132,6 +132,17 @@ export interface Payment {
     } | null;
 }
 
+export interface AppointmentReschedule {
+    id: number;
+    previous_start: string;
+    previous_end: string;
+    new_start: string;
+    new_end: string;
+    reason: string | null;
+    rescheduled_at: string | null;
+    rescheduled_by_name: string | null;
+}
+
 export interface PatientNoteRevision {
     id: number;
     body: string;
@@ -184,6 +195,11 @@ export interface AppointmentRequest {
     /* Mensajes generados por el servidor con los datos reales de la cita. */
     proposal_message?: string | null;
     confirmation_message?: string | null;
+
+    /* Reprogramaciones y vigencia del botón de reprogramar. */
+    can_reschedule?: boolean;
+    reschedules?: AppointmentReschedule[];
+    reschedule_message?: string | null;
 }
 
 export interface PaginationMeta {
