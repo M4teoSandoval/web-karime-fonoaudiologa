@@ -275,28 +275,35 @@ export default function AdminDashboard({
                         <p className="text-sm text-[#706a67]">No hay citas confirmadas próximas.</p>
                     ) : (
                         <ul className="min-w-0 divide-y divide-[#eadedf]">
-                            {upcoming.map((appointment) => (
-                                <li key={appointment.id} className="min-w-0">
-                                    <Link
-                                        href={`/admin/solicitudes/${appointment.id}`}
-                                        className="group flex min-w-0 flex-col gap-1.5 py-3.5 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-3"
-                                    >
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-bold text-[#373432]">{appointment.patient_name}</p>
-                                            <p className="mt-0.5 break-words text-xs leading-5 text-[#706a67]">
-                                                {appointment.service} · {appointment.duration_minutes} min
-                                                {appointment.balance_cents !== null && appointment.balance_cents > 0
-                                                    ? ` · Saldo ${formatMoney(appointment.balance_cents)}`
-                                                    : ''}
-                                            </p>
-                                        </div>
+                            {upcoming.map((appointment) => {
+                                const balanceCents = appointment.package ? appointment.package.balance_cents : appointment.balance_cents;
 
-                                        <span className="block max-w-full break-words text-xs font-semibold leading-5 text-[#7d8f7a] sm:shrink-0 sm:text-right">
-                                            {formatDateTime(appointment.confirmed_start)}
-                                        </span>
-                                    </Link>
-                                </li>
-                            ))}
+                                return (
+                                    <li key={appointment.id} className="min-w-0">
+                                        <Link
+                                            href={`/admin/solicitudes/${appointment.id}`}
+                                            className="group flex min-w-0 flex-col gap-1.5 py-3.5 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                                        >
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-bold text-[#373432]">{appointment.patient_name}</p>
+                                                <p className="mt-0.5 break-words text-xs leading-5 text-[#706a67]">
+                                                    {appointment.service} · {appointment.duration_minutes} min
+                                                    {appointment.package
+                                                        ? ` · Sesión ${appointment.package.session_number ?? '—'} de ${appointment.package.sessions_count}`
+                                                        : ''}
+                                                    {balanceCents !== null && balanceCents > 0
+                                                        ? ` · Saldo ${formatMoney(balanceCents)}${appointment.package ? ' del paquete' : ''}`
+                                                        : ''}
+                                                </p>
+                                            </div>
+
+                                            <span className="block max-w-full break-words text-xs font-semibold leading-5 text-[#7d8f7a] sm:shrink-0 sm:text-right">
+                                                {formatDateTime(appointment.confirmed_start)}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     )}
                 </section>

@@ -34,6 +34,7 @@ class Payment extends Model
      */
     protected $fillable = [
         'appointment_id',
+        'package_id',
         'amount_cents',
         'paid_on',
         'method',
@@ -63,6 +64,17 @@ class Payment extends Model
     public function appointment(): BelongsTo
     {
         return $this->belongsTo(AppointmentRequest::class, 'appointment_id');
+    }
+
+    /**
+     * Paquete al que pertenece el pago, si corresponde. El saldo del paquete
+     * se calcula sobre estos pagos y no se repite por sesión.
+     *
+     * @return BelongsTo<ServicePackage, $this>
+     */
+    public function package(): BelongsTo
+    {
+        return $this->belongsTo(ServicePackage::class, 'package_id');
     }
 
     /**

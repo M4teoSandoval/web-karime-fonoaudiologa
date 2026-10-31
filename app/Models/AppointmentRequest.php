@@ -116,6 +116,8 @@ class AppointmentRequest extends Model
      */
     protected $fillable = [
         'patient_id',
+        'package_id',
+        'package_session_number',
         'patient_name',
         'patient_phone',
         'service',
@@ -141,6 +143,7 @@ class AppointmentRequest extends Model
     {
         return [
             'duration_minutes' => 'integer',
+            'package_session_number' => 'integer',
             'service_value_cents' => 'integer',
             'proposed_slots' => 'array',
             'confirmed_start' => 'datetime',
@@ -157,6 +160,25 @@ class AppointmentRequest extends Model
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    /**
+     * Paquete de sesiones al que pertenece la cita, si aplica.
+     *
+     * @return BelongsTo<ServicePackage, $this>
+     */
+    public function package(): BelongsTo
+    {
+        return $this->belongsTo(ServicePackage::class, 'package_id');
+    }
+
+    /**
+     * Indica si la cita es una sesión de un paquete. En ese caso el valor y el
+     * saldo se gestionan desde el paquete, no desde la sesión.
+     */
+    public function isPackageSession(): bool
+    {
+        return $this->package_id !== null;
     }
 
     /**
@@ -207,6 +229,15 @@ class AppointmentRequest extends Model
     public function scopeChargeable(Builder $query): Builder
     {
         return $query->whereNotIn('status', [self::STATUS_CANCELLED, self::STATUS_NO_SHOW]);
+    }
+
+    /**
+     * Citas individuales, sin paquete. El saldo de las sesiones de un paquete
+     * se calcula una sola vez desde el paquete para no duplicar el pendiente.
+     */
+    public function scopeStandalone(Builder $query): Builder
+    {
+        return $query->whereNull('package_id');
     }
 
     /**

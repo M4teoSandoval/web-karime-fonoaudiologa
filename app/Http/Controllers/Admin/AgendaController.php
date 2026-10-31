@@ -33,6 +33,7 @@ class AgendaController extends Controller
         $appointments = AppointmentRequest::query()
             ->occupying()
             ->withPaidTotal()
+            ->with('package.payments')
             ->whereBetween('confirmed_start', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
             ->orderBy('confirmed_start')
             ->get();

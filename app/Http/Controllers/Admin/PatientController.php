@@ -8,6 +8,7 @@ use App\Models\AppointmentRequest;
 use App\Models\Patient;
 use App\Models\PatientNote;
 use App\Models\Payment;
+use App\Models\ServicePackage;
 use App\Support\AppointmentPresenter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -63,6 +64,7 @@ class PatientController extends Controller
     {
         $appointments = $patient->appointments()
             ->with([
+                'package.payments',
                 'payments' => fn ($query) => $query
                     ->with(['recorder:id,name', 'voider:id,name'])
                     ->orderBy('paid_on')
@@ -72,12 +74,24 @@ class PatientController extends Controller
             ->orderByRaw('COALESCE(confirmed_start, created_at) DESC')
             ->get();
 
+        $packages = $patient->packages()
+            ->with([
+                'patient',
+                'appointments',
+                'payments.recorder:id,name',
+                'payments.voider:id,name',
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+
         $payments = Payment::query()
             ->whereHas('appointment', fn (Builder $query) => $query->where('patient_id', $patient->id))
             ->with([
                 'recorder:id,name',
                 'voider:id,name',
                 'appointment:id,service,confirmed_start,patient_name',
+                'package:id,service,sessions_count',
             ])
             ->orderByDesc('paid_on')
             ->orderByDesc('id')
@@ -105,6 +119,9 @@ class PatientController extends Controller
             'appointments' => $appointments
                 ->map(fn (AppointmentRequest $appointment) => AppointmentPresenter::detail($appointment, includeMessages: false))
                 ->values(),
+            'packages' => $packages
+                ->map(fn (ServicePackage $package) => AppointmentPresenter::packageSummary($package, includeSessions: false))
+                ->values(),
             'payments' => $payments->map(function (Payment $payment) {
                 $data = AppointmentPresenter::payment($payment);
                 $data['appointment'] = $payment->appointment !== null
@@ -113,6 +130,13 @@ class PatientController extends Controller
                         'service' => $payment->appointment->service,
                         'confirmed_start' => $payment->appointment->confirmed_start?->toDateTimeString(),
                         'patient_name' => $payment->appointment->patient_name,
+                    ]
+                    : null;
+                $data['package'] = $payment->package !== null
+                    ? [
+                        'id' => $payment->package->id,
+                        'service' => $payment->package->service,
+                        'sessions_count' => (int) $payment->package->sessions_count,
                     ]
                     : null;
 
@@ -226,7 +250,7 @@ class PatientController extends Controller
 
     private function outstandingCents(Patient $patient): int
     {
-        return (int) $patient->appointments()
+        $appointmentsOutstanding = (int) $patient->appointments()
             ->chargeable()
             ->whereNotNull('service_value_cents')
             ->withPaidTotal()
@@ -235,5 +259,14 @@ class PatientController extends Controller
                 0,
                 (int) $appointment->service_value_cents - $appointment->totalPaidCents(),
             ));
+
+        // Las sesiones de un paquete no tienen valor propio: su saldo se suma
+        // una sola vez desde el paquete para no duplicar el pendiente.
+        $packagesOutstanding = (int) $patient->packages()
+            ->withPaidTotal()
+            ->get()
+            ->sum(fn (ServicePackage $package) => $package->balanceCents());
+
+        return $appointmentsOutstanding + $packagesOutstanding;
     }
 }

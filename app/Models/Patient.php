@@ -33,6 +33,16 @@ class Patient extends Model
     }
 
     /**
+     * Paquetes de sesiones adquiridos por el paciente.
+     *
+     * @return HasMany<ServicePackage, $this>
+     */
+    public function packages(): HasMany
+    {
+        return $this->hasMany(ServicePackage::class);
+    }
+
+    /**
      * Notas de seguimiento privadas.
      *
      * @return HasMany<PatientNote, $this>

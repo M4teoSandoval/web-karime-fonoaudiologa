@@ -33,6 +33,7 @@ class AppointmentRequestController extends Controller
 
         $appointments = AppointmentRequest::query()
             ->withPaidTotal()
+            ->with('package.payments')
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['service'] ?? null, fn ($query, $service) => $query->where('service', $service))
             ->latest()
@@ -62,6 +63,11 @@ class AppointmentRequestController extends Controller
     {
         $appointment->load([
             'patient',
+            'package.patient',
+            'package.creator:id,name',
+            'package.appointments',
+            'package.payments.recorder:id,name',
+            'package.payments.voider:id,name',
             'payments.recorder:id,name',
             'payments.voider:id,name',
             'reschedules.rescheduledBy:id,name',
@@ -87,6 +93,12 @@ class AppointmentRequestController extends Controller
 
         $serviceValueCents = Money::toCents($validated['service_value'] ?? null);
 
+        if ($appointment->isPackageSession() && $serviceValueCents !== null) {
+            throw ValidationException::withMessages([
+                'service_value' => 'Las sesiones de un paquete no tienen un valor propio. El valor y el saldo se gestionan desde el paquete.',
+            ]);
+        }
+
         if ($serviceValueCents !== null && $serviceValueCents <= 0) {
             throw ValidationException::withMessages([
                 'service_value' => 'El valor acordado debe ser mayor que cero.',
@@ -101,7 +113,9 @@ class AppointmentRequestController extends Controller
 
         $appointment->update([
             'duration_minutes' => (int) $validated['duration_minutes'],
-            'service_value_cents' => $serviceValueCents ?? $appointment->service_value_cents,
+            'service_value_cents' => $appointment->isPackageSession()
+                ? null
+                : ($serviceValueCents ?? $appointment->service_value_cents),
             'notes' => $validated['notes'] !== null ? trim($validated['notes']) : null,
         ]);
 

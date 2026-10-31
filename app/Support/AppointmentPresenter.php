@@ -6,6 +6,7 @@ use App\Models\AppointmentRequest;
 use App\Models\AppointmentReschedule;
 use App\Models\Patient;
 use App\Models\Payment;
+use App\Models\ServicePackage;
 use Illuminate\Support\Carbon;
 
 /**
@@ -20,6 +21,10 @@ final class AppointmentPresenter
      */
     public static function summary(AppointmentRequest $appointment): array
     {
+        // La relación se carga explícitamente en los controladores para evitar
+        // consultas por cada sesión de un paquete.
+        $package = $appointment->relationLoaded('package') ? $appointment->package : null;
+
         return [
             'id' => $appointment->id,
             'patient_id' => $appointment->patient_id,
@@ -33,6 +38,9 @@ final class AppointmentPresenter
             'total_paid_cents' => $appointment->totalPaidCents(),
             'balance_cents' => $appointment->balanceCents(),
             'payment_status' => $appointment->paymentStatus(),
+            'package_id' => $appointment->package_id,
+            'package_session_number' => $appointment->package_session_number,
+            'package' => $package !== null ? self::packageReference($package, $appointment) : null,
             'confirmed_start' => $appointment->confirmed_start?->toDateTimeString(),
             'confirmed_end' => $appointment->confirmed_end?->toDateTimeString(),
             'attended_at' => $appointment->attended_at?->toDateTimeString(),
@@ -64,6 +72,10 @@ final class AppointmentPresenter
                 ->map(fn (Payment $payment) => self::payment($payment))
                 ->all()
             : [];
+
+        $data['package_detail'] = $appointment->relationLoaded('package') && $appointment->package !== null
+            ? self::packageSummary($appointment->package, includeSessions: true)
+            : null;
 
         $data['proposal_message'] = $includeMessages && $appointment->hasProposedSlots()
             ? AppointmentRequest::buildProposalMessage($appointment->patient_name, $appointment->proposed_slots ?? [])
@@ -99,6 +111,92 @@ final class AppointmentPresenter
     }
 
     /**
+     * Referencia ligera al paquete, pensada para la agenda y los listados.
+     *
+     * @return array<string, mixed>
+     */
+    private static function packageReference(ServicePackage $package, AppointmentRequest $appointment): array
+    {
+        return [
+            'id' => $package->id,
+            'service' => $package->service,
+            'sessions_count' => $package->sessions_count,
+            'session_number' => $appointment->package_session_number,
+            'total_value_cents' => $package->total_value_cents,
+            'total_paid_cents' => $package->totalPaidCents(),
+            'balance_cents' => $package->balanceCents(),
+            'payment_status' => $package->paymentStatus(),
+            'url' => route('admin.packages.show', $package),
+        ];
+    }
+
+    /**
+     * Detalle completo de un paquete de sesiones.
+     *
+     * @return array<string, mixed>
+     */
+    public static function packageSummary(ServicePackage $package, bool $includeSessions = true): array
+    {
+        $package->loadMissing([
+            'patient',
+            'appointments',
+            'payments.recorder:id,name',
+            'payments.voider:id,name',
+            'creator:id,name',
+        ]);
+
+        $counts = $package->sessionCounts();
+
+        return [
+            'id' => $package->id,
+            'patient' => $package->patient !== null ? self::patientSummary($package->patient) : null,
+            'service' => $package->service,
+            'sessions_count' => (int) $package->sessions_count,
+            'duration_minutes' => (int) $package->duration_minutes,
+            'total_value_cents' => (int) $package->total_value_cents,
+            'total_paid_cents' => $package->totalPaidCents(),
+            'balance_cents' => $package->balanceCents(),
+            'payment_status' => $package->paymentStatus(),
+            'notes' => $package->notes,
+            'created_at' => $package->created_at?->toDateTimeString(),
+            'created_by_name' => $package->relationLoaded('creator') ? $package->creator?->name : null,
+            'counts' => $counts,
+            'sessions' => $includeSessions
+                ? $package->appointments
+                    ->map(fn (AppointmentRequest $session) => self::packageSession($session))
+                    ->values()
+                    ->all()
+                : [],
+            'payments' => $package->payments
+                ->sortBy([['paid_on', 'asc'], ['id', 'asc']])
+                ->values()
+                ->map(fn (Payment $payment) => self::payment($payment))
+                ->all(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function packageSession(AppointmentRequest $session): array
+    {
+        return [
+            'id' => $session->id,
+            'number' => $session->package_session_number,
+            'patient_name' => $session->patient_name,
+            'status' => $session->status,
+            'duration_minutes' => $session->duration_minutes,
+            'confirmed_start' => $session->confirmed_start?->toDateTimeString(),
+            'confirmed_end' => $session->confirmed_end?->toDateTimeString(),
+            'attended_at' => $session->attended_at?->toDateTimeString(),
+            'cancelled_at' => $session->cancelled_at?->toDateTimeString(),
+            'no_show_at' => $session->no_show_at?->toDateTimeString(),
+            'can_reschedule' => $session->isReschedulable(),
+            'url' => route('admin.requests.show', $session),
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public static function reschedule(AppointmentReschedule $reschedule): array
@@ -125,6 +223,7 @@ final class AppointmentPresenter
         return [
             'id' => $payment->id,
             'appointment_id' => $payment->appointment_id,
+            'package_id' => $payment->package_id,
             'amount_cents' => $payment->amount_cents,
             'paid_on' => $payment->paid_on?->toDateString(),
             'method' => $payment->method,

@@ -1,5 +1,6 @@
 import AppointmentPayments from '@/components/admin/appointment-payments';
 import AppointmentRescheduleHistory from '@/components/admin/appointment-reschedule-history';
+import PackageProgressBadge from '@/components/admin/package-progress-badge';
 import PatientFields from '@/components/admin/patient-fields';
 import RescheduleAppointmentDialog from '@/components/admin/reschedule-appointment-dialog';
 import InputError from '@/components/input-error';
@@ -28,6 +29,7 @@ import {
     CircleX,
     ClipboardCheck,
     Copy,
+    Layers,
     LoaderCircle,
     ReceiptText,
     Save,
@@ -62,7 +64,15 @@ export default function RequestShow({ appointment }: RequestShowProps) {
 
     const isManageable = appointment.status === 'pending' || appointment.status === 'slots_proposed';
     const isConfirmed = appointment.status === 'confirmed';
-    const balance = appointment.balance_cents ?? 0;
+    const packageReference = appointment.package ?? null;
+    const isPackageSession = appointment.package_id !== null;
+    // En una sesión de paquete el valor y el saldo viven en el paquete; nunca
+    // se duplican por sesión.
+    const sessionBalance = appointment.balance_cents ?? 0;
+    const balance = packageReference ? packageReference.balance_cents : sessionBalance;
+    const totalPaid = packageReference ? packageReference.total_paid_cents : appointment.total_paid_cents;
+    const serviceValue = packageReference ? packageReference.total_value_cents : appointment.service_value_cents;
+    const paymentStatus = packageReference ? packageReference.payment_status : appointment.payment_status;
 
     const details = useForm({
         duration_minutes: appointment.duration_minutes,
@@ -71,8 +81,8 @@ export default function RequestShow({ appointment }: RequestShowProps) {
     });
 
     const attendance = useForm({
-        register_payment: balance > 0,
-        payment_amount: balance > 0 ? centsToInput(balance) : '',
+        register_payment: !isPackageSession && sessionBalance > 0,
+        payment_amount: !isPackageSession && sessionBalance > 0 ? centsToInput(sessionBalance) : '',
         payment_paid_on: localTodayIso(),
         payment_method: '',
         payment_notes: '',
@@ -243,13 +253,27 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                                 {statusLabels[appointment.status]}
                             </Badge>
 
-                            {appointment.service_value_cents !== null && (
-                                <Badge
-                                    variant="secondary"
-                                    className={`rounded-full px-3.5 py-1.5 text-xs font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
+                            {isPackageSession ? (
+                                <PackageProgressBadge package={packageReference} />
+                            ) : (
+                                serviceValue !== null && (
+                                    <Badge
+                                        variant="secondary"
+                                        className={`rounded-full px-3.5 py-1.5 text-xs font-bold ${paymentStatusBadgeClasses[paymentStatus]}`}
+                                    >
+                                        {paymentStatusLabels[paymentStatus]}
+                                    </Badge>
+                                )
+                            )}
+
+                            {packageReference && (
+                                <Link
+                                    href={packageReference.url}
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-[#8a6d3b]/30 bg-[#f3ecdc] px-3.5 py-1.5 text-xs font-bold text-[#8a6d3b] transition-colors hover:border-[#8a6d3b]"
                                 >
-                                    {paymentStatusLabels[appointment.payment_status]}
-                                </Badge>
+                                    <Layers className="size-3.5" />
+                                    Ver paquete completo
+                                </Link>
                             )}
 
                             {appointment.patient && (
@@ -268,19 +292,21 @@ export default function RequestShow({ appointment }: RequestShowProps) {
 
                     <div className="grid shrink-0 grid-cols-3 gap-2 rounded-2xl border border-[#eadedf] bg-white p-4 text-center sm:min-w-[320px]">
                         <div>
-                            <p className="text-[11px] font-bold tracking-wide text-[#7d8f7a] uppercase">Valor</p>
-                            <p className="mt-1 text-sm font-bold text-[#373432]">{formatMoney(appointment.service_value_cents)}</p>
+                            <p className="text-[11px] font-bold tracking-wide text-[#7d8f7a] uppercase">
+                                {packageReference ? 'Paquete' : 'Valor'}
+                            </p>
+                            <p className="mt-1 text-sm font-bold text-[#373432]">{formatMoney(serviceValue)}</p>
                         </div>
 
                         <div>
                             <p className="text-[11px] font-bold tracking-wide text-[#7d8f7a] uppercase">Pagado</p>
-                            <p className="mt-1 text-sm font-bold text-[#6f826c]">{formatMoney(appointment.total_paid_cents)}</p>
+                            <p className="mt-1 text-sm font-bold text-[#6f826c]">{formatMoney(totalPaid)}</p>
                         </div>
 
                         <div>
                             <p className="text-[11px] font-bold tracking-wide text-[#7d8f7a] uppercase">Saldo</p>
                             <p className="mt-1 text-sm font-bold text-[#c98796]">
-                                {appointment.balance_cents === null ? '—' : formatMoney(balance)}
+                                {serviceValue === null ? '—' : formatMoney(balance)}
                             </p>
                         </div>
                     </div>
@@ -314,7 +340,9 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                             <p className="text-sm font-bold text-[#373432]">Cita atendida</p>
                             <p className="mt-1 text-sm leading-6 text-[#51634e]">
                                 Registrada el {formatDateTime(appointment.attended_at)}.
-                                {balance > 0 ? ` Queda un saldo pendiente de ${formatMoney(balance)}.` : ' Sin saldo pendiente.'}
+                                {balance > 0
+                                    ? ` Queda un saldo pendiente${packageReference ? ' del paquete' : ''} de ${formatMoney(balance)}.`
+                                    : ' Sin saldo pendiente.'}
                             </p>
                         </div>
                     </div>
@@ -368,15 +396,22 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                             <form onSubmit={handleAttended} className="mt-5 space-y-3 border-t border-[#7d8f7a]/20 pt-5">
                                 <p className="text-sm font-bold text-[#373432]">¿Qué pasó con esta cita?</p>
 
-                                <label className="flex items-start gap-2.5 text-sm leading-6 text-[#373432]">
-                                    <input
-                                        type="checkbox"
-                                        checked={attendance.data.register_payment}
-                                        onChange={(event) => attendance.setData('register_payment', event.target.checked)}
-                                        className="mt-0.5 size-4 rounded border-[#ded4d4] text-[#7d8f7a] focus:ring-[#7d8f7a]"
-                                    />
-                                    <span>Registrar el pago recibido ahora (puedes dejar el saldo pendiente).</span>
-                                </label>
+                                {isPackageSession ? (
+                                    <p className="rounded-xl border border-[#8a6d3b]/25 bg-[#f3ecdc]/40 px-4 py-3 text-xs leading-5 text-[#706a67]">
+                                        Los pagos de esta cita se administran desde el paquete completo. Al marcarla como atendida solo se
+                                        actualiza el avance de la sesión, sin registrar cobros por sesión.
+                                    </p>
+                                ) : (
+                                    <label className="flex items-start gap-2.5 text-sm leading-6 text-[#373432]">
+                                        <input
+                                            type="checkbox"
+                                            checked={attendance.data.register_payment}
+                                            onChange={(event) => attendance.setData('register_payment', event.target.checked)}
+                                            className="mt-0.5 size-4 rounded border-[#ded4d4] text-[#7d8f7a] focus:ring-[#7d8f7a]"
+                                        />
+                                        <span>Registrar el pago recibido ahora (puedes dejar el saldo pendiente).</span>
+                                    </label>
+                                )}
 
                                 {attendance.data.register_payment && (
                                     <div className="grid gap-3 sm:grid-cols-2">
@@ -618,7 +653,47 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                     )}
 
                     {/* Payments */}
-                    <AppointmentPayments appointment={appointment} />
+                    {isPackageSession && packageReference ? (
+                        <section className="rounded-2xl border border-[#8a6d3b]/25 bg-[#f3ecdc]/40 p-5 sm:p-6" aria-labelledby="package-payments-link">
+                            <h2 id="package-payments-link" className="flex items-center gap-2 text-lg font-semibold text-[#373432]">
+                                <Layers className="size-5 text-[#8a6d3b]" />
+                                Pagos del paquete
+                            </h2>
+
+                            <p className="mt-2 text-sm leading-6 text-[#706a67]">
+                                Esta cita es la sesión {packageReference.session_number ?? '—'} de {packageReference.sessions_count} de un
+                                paquete. Los pagos se registran una sola vez sobre el paquete completo desde su ficha, así no se duplican
+                                ingresos por sesión.
+                            </p>
+
+                            <dl className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-white p-4 text-center">
+                                <div>
+                                    <dt className="text-[11px] font-bold tracking-wide text-[#7d8f7a] uppercase">Paquete</dt>
+                                    <dd className="mt-1 text-sm font-bold text-[#373432]">{formatMoney(packageReference.total_value_cents)}</dd>
+                                </div>
+
+                                <div>
+                                    <dt className="text-[11px] font-bold tracking-wide text-[#7d8f7a] uppercase">Pagado</dt>
+                                    <dd className="mt-1 text-sm font-bold text-[#6f826c]">{formatMoney(packageReference.total_paid_cents)}</dd>
+                                </div>
+
+                                <div>
+                                    <dt className="text-[11px] font-bold tracking-wide text-[#7d8f7a] uppercase">Saldo</dt>
+                                    <dd className="mt-1 text-sm font-bold text-[#c98796]">{formatMoney(packageReference.balance_cents)}</dd>
+                                </div>
+                            </dl>
+
+                            <Link
+                                href={packageReference.url}
+                                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#8a6d3b] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#775d31]"
+                            >
+                                <ReceiptText className="size-4" />
+                                Ver y registrar pagos del paquete
+                            </Link>
+                        </section>
+                    ) : (
+                        <AppointmentPayments appointment={appointment} />
+                    )}
                 </div>
 
                 {/* =================================================
@@ -712,27 +787,49 @@ export default function RequestShow({ appointment }: RequestShowProps) {
                                 <InputError message={details.errors.duration_minutes} />
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label htmlFor="service-value" className="text-xs font-bold tracking-wide text-[#7d8f7a] uppercase">
-                                    Valor acordado (COP)
-                                </label>
+                            {isPackageSession ? (
+                                <div className="space-y-2 rounded-xl border border-[#8a6d3b]/25 bg-[#f3ecdc]/40 p-4">
+                                    <p className="text-xs font-bold tracking-wide text-[#8a6d3b] uppercase">Valor del paquete</p>
 
-                                <input
-                                    id="service-value"
-                                    type="text"
-                                    inputMode="numeric"
-                                    value={details.data.service_value}
-                                    onChange={(event) => details.setData('service_value', event.target.value)}
-                                    placeholder="100000"
-                                    className="h-11 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-3 text-sm text-[#373432] placeholder:text-[#b3aaa6] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none"
-                                />
+                                    <p className="text-sm leading-6 text-[#706a67]">
+                                        Esta sesión forma parte de un paquete de {packageReference?.sessions_count ?? '—'} sesiones. El valor total
+                                        ({formatMoney(packageReference?.total_value_cents)}) y su saldo se administran desde la ficha del paquete
+                                        para no duplicar cifras.
+                                    </p>
 
-                                {estimatedServiceValue !== null && estimatedServiceValue > 0 && (
-                                    <p className="text-xs text-[#706a67]">Se guardará como {formatMoney(estimatedServiceValue)}.</p>
-                                )}
+                                    {packageReference && (
+                                        <Link
+                                            href={packageReference.url}
+                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8a6d3b] underline-offset-4 hover:underline"
+                                        >
+                                            <Layers className="size-3.5" />
+                                            Abrir el paquete
+                                        </Link>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-1.5">
+                                    <label htmlFor="service-value" className="text-xs font-bold tracking-wide text-[#7d8f7a] uppercase">
+                                        Valor acordado (COP)
+                                    </label>
 
-                                <InputError message={details.errors.service_value} />
-                            </div>
+                                    <input
+                                        id="service-value"
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={details.data.service_value}
+                                        onChange={(event) => details.setData('service_value', event.target.value)}
+                                        placeholder="100000"
+                                        className="h-11 w-full rounded-xl border border-[#ded4d4] bg-[#fcfaf9] px-3 text-sm text-[#373432] placeholder:text-[#b3aaa6] focus:border-[#d99aa8] focus:ring-1 focus:ring-[#d99aa8] focus:outline-none"
+                                    />
+
+                                    {estimatedServiceValue !== null && estimatedServiceValue > 0 && (
+                                        <p className="text-xs text-[#706a67]">Se guardará como {formatMoney(estimatedServiceValue)}.</p>
+                                    )}
+
+                                    <InputError message={details.errors.service_value} />
+                                </div>
+                            )}
 
                             <div className="space-y-1.5">
                                 <label htmlFor="notes" className="text-xs font-bold tracking-wide text-[#7d8f7a] uppercase">
@@ -771,27 +868,39 @@ export default function RequestShow({ appointment }: RequestShowProps) {
 
                         <dl className="mt-4 space-y-2 text-sm">
                             <div className="flex items-center justify-between gap-3">
-                                <dt className="text-[#706a67]">Valor acordado</dt>
-                                <dd className="font-bold text-[#373432]">{formatMoney(appointment.service_value_cents)}</dd>
+                                <dt className="text-[#706a67]">{packageReference ? 'Valor del paquete' : 'Valor acordado'}</dt>
+                                <dd className="font-bold text-[#373432]">{formatMoney(serviceValue)}</dd>
                             </div>
 
                             <div className="flex items-center justify-between gap-3">
                                 <dt className="text-[#706a67]">Total pagado</dt>
-                                <dd className="font-bold text-[#6f826c]">{formatMoney(appointment.total_paid_cents)}</dd>
+                                <dd className="font-bold text-[#6f826c]">{formatMoney(totalPaid)}</dd>
                             </div>
 
                             <div className="flex items-center justify-between gap-3 border-t border-[#eadedf] pt-2">
                                 <dt className="text-[#706a67]">Saldo pendiente</dt>
                                 <dd className="font-bold text-[#c98796]">
-                                    {appointment.balance_cents === null ? '—' : formatMoney(balance)}
+                                    {serviceValue === null ? '—' : formatMoney(balance)}
                                 </dd>
                             </div>
                         </dl>
 
                         <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#706a67]">
                             <ReceiptText className="size-3.5" />
-                            {appointment.payments?.length ?? 0} movimiento(s) registrado(s)
+                            {packageReference
+                                ? 'El saldo corresponde al paquete completo'
+                                : `${appointment.payments?.length ?? 0} movimiento(s) registrado(s)`}
                         </p>
+
+                        {packageReference && (
+                            <Link
+                                href={packageReference.url}
+                                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#8a6d3b] underline-offset-4 hover:underline"
+                            >
+                                <Layers className="size-3.5" />
+                                Ver paquete y sus pagos
+                            </Link>
+                        )}
                     </section>
 
                     {/* Cancel */}

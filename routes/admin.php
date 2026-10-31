@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AgendaController;
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\AppointmentPackageController;
 use App\Http\Controllers\Admin\AppointmentRequestController;
 use App\Http\Controllers\Admin\AvailabilityBlockController;
 use App\Http\Controllers\Admin\AvailabilityController;
@@ -28,6 +29,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // Citas manuales (creadas desde la agenda).
     Route::post('citas', [AppointmentController::class, 'store'])->name('admin.appointments.store');
+
+    // Paquetes de sesiones. "proponer" se registra antes de {package} para que
+    // no se interprete como un identificador.
+    Route::post('paquetes/proponer', [AppointmentPackageController::class, 'preview'])->name('admin.packages.preview');
+    Route::post('paquetes', [AppointmentPackageController::class, 'store'])->name('admin.packages.store');
+    Route::get('paquetes/{package}', [AppointmentPackageController::class, 'show'])->name('admin.packages.show');
+    Route::post('paquetes/{package}/pagos', [PaymentController::class, 'storeForPackage'])->name('admin.packages.payments.store');
+    Route::post('paquetes/{package}/pagos/{payment}/anular', [PaymentController::class, 'voidForPackage'])->name('admin.packages.payments.void');
 
     // Solicitudes de citas.
     Route::get('solicitudes', [AppointmentRequestController::class, 'index'])->name('admin.requests.index');

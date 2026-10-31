@@ -2,13 +2,24 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { formatDateTime, formatTime, localTodayIso } from '@/lib/appointments';
-import { type AppointmentRequest, type ProposedSlot } from '@/types';
+import { type ProposedSlot } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { CalendarClock, Clock, LoaderCircle } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 
+/**
+ * Datos mínimos para reprogramar. Tanto una cita completa como una sesión de
+ * paquete cumplen este contrato, así el mismo modal sirve en ambos lugares.
+ */
+export interface RescheduleTarget {
+    id: number;
+    patient_name: string;
+    duration_minutes: number;
+    confirmed_start: string | null;
+}
+
 interface RescheduleAppointmentDialogProps {
-    appointment: AppointmentRequest;
+    appointment: RescheduleTarget;
     triggerLabel?: string;
     triggerClassName?: string;
 }

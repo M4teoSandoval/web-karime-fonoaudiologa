@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AppointmentRequest;
 use App\Models\Patient;
 use App\Models\Payment;
+use App\Models\ServicePackage;
 use App\Models\WorkSchedule;
 use App\Support\AppointmentPresenter;
 use Illuminate\Http\Request;
@@ -55,6 +56,7 @@ class DashboardController extends Controller
         $upcoming = AppointmentRequest::query()
             ->occupying()
             ->withPaidTotal()
+            ->with('package.payments')
             ->where('confirmed_start', '>=', Carbon::now())
             ->orderBy('confirmed_start')
             ->limit(5)
@@ -72,6 +74,12 @@ class DashboardController extends Controller
             ->withPaidTotal()
             ->get()
             ->sum(fn (AppointmentRequest $appointment) => max(0, (int) $appointment->balanceCents()));
+
+        // El saldo de los paquetes se suma una sola vez, nunca por sesión.
+        $outstandingCents += ServicePackage::query()
+            ->withPaidTotal()
+            ->get()
+            ->sum(fn (ServicePackage $package) => $package->balanceCents());
 
         $hasSchedules = WorkSchedule::query()->where('is_active', true)->exists();
 
@@ -124,7 +132,7 @@ class DashboardController extends Controller
 
         $payments = Payment::query()
             ->active()
-            ->whereBetween('paid_on', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('paid_on', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
             ->get(['paid_on', 'amount_cents'])
             ->groupBy(fn (Payment $payment) => $payment->paid_on?->format('Y-m'));
 
@@ -155,7 +163,7 @@ class DashboardController extends Controller
     {
         return (int) Payment::query()
             ->active()
-            ->whereBetween('paid_on', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('paid_on', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
             ->sum('amount_cents');
     }
 

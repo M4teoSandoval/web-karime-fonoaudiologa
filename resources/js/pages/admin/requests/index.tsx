@@ -1,3 +1,4 @@
+import PackageProgressBadge from '@/components/admin/package-progress-badge';
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/admin-layout';
 import {
@@ -107,21 +108,33 @@ export default function RequestsIndex({ appointments, pagination, filters, servi
 
                                     <p className="mt-0.5 text-xs text-[#706a67]">Registrada el {formatDate(appointment.created_at)}</p>
 
-                                    {appointment.service_value_cents !== null && (
+                                    {appointment.package ? (
                                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                                            <Badge
-                                                variant="secondary"
-                                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
-                                            >
-                                                {paymentStatusLabels[appointment.payment_status]}
-                                            </Badge>
+                                            <PackageProgressBadge package={appointment.package} />
 
-                                            {appointment.balance_cents !== null && appointment.balance_cents > 0 && (
+                                            {appointment.package.balance_cents > 0 && (
                                                 <span className="text-xs font-semibold text-[#c98796]">
-                                                    Saldo {formatMoney(appointment.balance_cents)}
+                                                    Saldo del paquete {formatMoney(appointment.package.balance_cents)}
                                                 </span>
                                             )}
                                         </div>
+                                    ) : (
+                                        appointment.service_value_cents !== null && (
+                                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
+                                                >
+                                                    {paymentStatusLabels[appointment.payment_status]}
+                                                </Badge>
+
+                                                {appointment.balance_cents !== null && appointment.balance_cents > 0 && (
+                                                    <span className="text-xs font-semibold text-[#c98796]">
+                                                        Saldo {formatMoney(appointment.balance_cents)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )
                                     )}
                                 </div>
 

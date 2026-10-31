@@ -112,9 +112,16 @@ export interface PatientListItem extends PatientSummary {
     outstanding_cents: number;
 }
 
+export interface PaymentPackageReference {
+    id: number;
+    service: string;
+    sessions_count: number;
+}
+
 export interface Payment {
     id: number;
     appointment_id: number;
+    package_id: number | null;
     amount_cents: number;
     paid_on: string;
     method: PaymentMethod | null;
@@ -130,6 +137,70 @@ export interface Payment {
         confirmed_start: string | null;
         patient_name: string;
     } | null;
+    package?: PaymentPackageReference | null;
+}
+
+export interface PackageSessionInput {
+    date: string;
+    start_time: string;
+    /** Permite enviar la sesión dentro de un formulario de Inertia. */
+    [key: string]: string;
+}
+
+/** Sesión de un paquete, tal como la presenta el servidor. */
+export interface PackageSession {
+    id: number;
+    number: number | null;
+    patient_name: string;
+    status: AppointmentStatus;
+    duration_minutes: number;
+    confirmed_start: string | null;
+    confirmed_end: string | null;
+    attended_at: string | null;
+    cancelled_at: string | null;
+    no_show_at: string | null;
+    can_reschedule: boolean;
+    url: string;
+}
+
+export interface PackageCounts {
+    programmed: number;
+    attended: number;
+    pending: number;
+    cancelled: number;
+    no_show: number;
+}
+
+/** Referencia ligera al paquete usada en agenda, listados y resúmenes. */
+export interface PackageReference {
+    id: number;
+    service: string;
+    sessions_count: number;
+    session_number: number | null;
+    total_value_cents: number;
+    total_paid_cents: number;
+    balance_cents: number;
+    payment_status: PaymentStatus;
+    url: string;
+}
+
+/** Detalle completo de un paquete de sesiones. */
+export interface ServicePackage {
+    id: number;
+    patient: PatientSummary | null;
+    service: string;
+    sessions_count: number;
+    duration_minutes: number;
+    total_value_cents: number;
+    total_paid_cents: number;
+    balance_cents: number;
+    payment_status: PaymentStatus;
+    notes: string | null;
+    created_at: string | null;
+    created_by_name: string | null;
+    counts: PackageCounts;
+    sessions: PackageSession[];
+    payments: Payment[];
 }
 
 export interface AppointmentReschedule {
@@ -178,6 +249,9 @@ export interface AppointmentRequest {
     total_paid_cents: number;
     balance_cents: number | null;
     payment_status: PaymentStatus;
+    package_id: number | null;
+    package_session_number: number | null;
+    package?: PackageReference | null;
     confirmed_start: string | null;
     confirmed_end: string | null;
     attended_at: string | null;
@@ -191,6 +265,7 @@ export interface AppointmentRequest {
     notes?: string | null;
     patient?: PatientSummary | null;
     payments?: Payment[];
+    package_detail?: ServicePackage | null;
 
     /* Mensajes generados por el servidor con los datos reales de la cita. */
     proposal_message?: string | null;

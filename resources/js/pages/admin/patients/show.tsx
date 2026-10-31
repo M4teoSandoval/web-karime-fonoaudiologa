@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import PackageProgressBadge from '@/components/admin/package-progress-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AdminLayout from '@/layouts/admin-layout';
@@ -13,9 +14,9 @@ import {
     statusLabels,
 } from '@/lib/appointments';
 import { formatMoney } from '@/lib/money';
-import { type AppointmentRequest, type PatientNote, type PatientSummary, type Payment } from '@/types';
+import { type AppointmentRequest, type PatientNote, type PatientSummary, type Payment, type ServicePackage } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, Check, LoaderCircle, Pencil, Plus, ReceiptText, Save, StickyNote, UserRound, X } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Check, Layers, LoaderCircle, Pencil, Plus, ReceiptText, Save, StickyNote, UserRound, X } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 
 interface PatientShowProps {
@@ -28,6 +29,7 @@ interface PatientShowProps {
         last_appointment_at: string | null;
     };
     appointments: AppointmentRequest[];
+    packages: ServicePackage[];
     payments: Payment[];
     notes: PatientNote[];
 }
@@ -146,7 +148,7 @@ function NoteItem({ patientId, note }: { patientId: number; note: PatientNote })
     );
 }
 
-export default function PatientShow({ patient, summary, appointments, payments, notes }: PatientShowProps) {
+export default function PatientShow({ patient, summary, appointments, packages, payments, notes }: PatientShowProps) {
     const editForm = useForm({
         name: patient.name,
         phone: patient.phone ?? '',
@@ -249,13 +251,23 @@ export default function PatientShow({ patient, summary, appointments, payments, 
                                                     {appointment.confirmed_start ? formatDateTime(appointment.confirmed_start) : `Registrada el ${formatDateShort(appointment.created_at)}`}
                                                     {appointment.duration_minutes ? ` · ${appointment.duration_minutes} min` : ''}
                                                 </p>
-                                                {appointment.service_value_cents !== null && (
+
+                                                {appointment.package ? (
                                                     <p className="mt-0.5 text-xs text-[#706a67]">
-                                                        {formatMoney(appointment.total_paid_cents)} pagados
-                                                        {appointment.balance_cents !== null && appointment.balance_cents > 0
-                                                            ? ` · saldo ${formatMoney(appointment.balance_cents)}`
-                                                            : ''}
+                                                        Sesión {appointment.package.session_number ?? '—'} de {appointment.package.sessions_count}
+                                                        {appointment.package.balance_cents > 0
+                                                            ? ` · saldo del paquete ${formatMoney(appointment.package.balance_cents)}`
+                                                            : ' · paquete pagado'}
                                                     </p>
+                                                ) : (
+                                                    appointment.service_value_cents !== null && (
+                                                        <p className="mt-0.5 text-xs text-[#706a67]">
+                                                            {formatMoney(appointment.total_paid_cents)} pagados
+                                                            {appointment.balance_cents !== null && appointment.balance_cents > 0
+                                                                ? ` · saldo ${formatMoney(appointment.balance_cents)}`
+                                                                : ''}
+                                                        </p>
+                                                    )
                                                 )}
                                             </div>
 
@@ -267,18 +279,97 @@ export default function PatientShow({ patient, summary, appointments, payments, 
                                                     {statusLabels[appointment.status]}
                                                 </Badge>
 
-                                                {appointment.service_value_cents !== null && (
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
-                                                    >
-                                                        {paymentStatusLabels[appointment.payment_status]}
-                                                    </Badge>
+                                                {appointment.package ? (
+                                                    <PackageProgressBadge package={appointment.package} />
+                                                ) : (
+                                                    appointment.service_value_cents !== null && (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
+                                                        >
+                                                            {paymentStatusLabels[appointment.payment_status]}
+                                                        </Badge>
+                                                    )
                                                 )}
                                             </div>
                                         </Link>
                                     </li>
                                 ))}
+                            </ul>
+                        )}
+                    </section>
+
+                    {/* Packages */}
+                    <section className="rounded-2xl border border-[#eadedf] bg-white p-5 sm:p-6" aria-labelledby="packages-heading">
+                        <h2 id="packages-heading" className="flex items-center gap-2 text-lg font-semibold text-[#373432]">
+                            <Layers className="size-5 text-[#7d8f7a]" />
+                            Paquetes de sesiones
+                        </h2>
+
+                        <p className="mt-1 text-sm text-[#706a67]">
+                            Procesos con varias sesiones acordadas. Cada paquete se cobra una sola vez y conserva su propio avance.
+                        </p>
+
+                        {packages.length === 0 ? (
+                            <p className="mt-4 text-sm text-[#706a67]">Este paciente aún no tiene paquetes de sesiones.</p>
+                        ) : (
+                            <ul className="mt-4 space-y-3">
+                                {packages.map((servicePackage) => {
+                                    const attended = servicePackage.counts.attended;
+                                    const progress =
+                                        servicePackage.sessions_count > 0
+                                            ? Math.round((attended / servicePackage.sessions_count) * 100)
+                                            : 0;
+
+                                    return (
+                                        <li key={servicePackage.id}>
+                                            <Link
+                                                href={`/admin/paquetes/${servicePackage.id}`}
+                                                className="block rounded-xl border border-[#eadedf] bg-[#fcfaf9] p-4 transition-colors hover:border-[#7d8f7a]"
+                                            >
+                                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-bold text-[#373432]">{servicePackage.service}</p>
+
+                                                        <p className="mt-0.5 text-xs text-[#706a67]">
+                                                            {servicePackage.sessions_count} sesiones · {servicePackage.duration_minutes} min cada una ·
+                                                            creado el {formatDateShort(servicePackage.created_at)}
+                                                        </p>
+
+                                                        <div className="mt-3 flex items-center gap-2">
+                                                            <div className="h-1.5 w-32 overflow-hidden rounded-full bg-[#eadedf]">
+                                                                <div className="h-full rounded-full bg-[#7d8f7a]" style={{ width: `${progress}%` }} />
+                                                            </div>
+
+                                                            <span className="text-[11px] font-semibold text-[#706a67]">
+                                                                {attended} de {servicePackage.sessions_count} atendidas
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-end">
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[servicePackage.payment_status]}`}
+                                                        >
+                                                            {paymentStatusLabels[servicePackage.payment_status]}
+                                                        </Badge>
+
+                                                        <p className="text-xs font-semibold text-[#706a67]">
+                                                            {formatMoney(servicePackage.total_paid_cents)} de {formatMoney(servicePackage.total_value_cents)}
+                                                        </p>
+
+                                                        {servicePackage.balance_cents > 0 && (
+                                                            <p className="text-xs font-semibold text-[#c98796]">
+                                                                Saldo {formatMoney(servicePackage.balance_cents)}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         )}
                     </section>
@@ -452,7 +543,20 @@ export default function PatientShow({ patient, summary, appointments, payments, 
 
                                         <p className="text-xs text-[#706a67]">
                                             {formatDateShort(payment.paid_on)}
-                                            {payment.appointment ? ` · ${payment.appointment.service}` : ''}
+
+                                            {payment.package ? (
+                                                <>
+                                                    {' · Pago del paquete '}
+                                                    <Link
+                                                        href={`/admin/paquetes/${payment.package.id}`}
+                                                        className="font-semibold text-[#8a6d3b] underline-offset-4 hover:underline"
+                                                    >
+                                                        {payment.package.service} ({payment.package.sessions_count} sesiones)
+                                                    </Link>
+                                                </>
+                                            ) : payment.appointment ? (
+                                                ` · ${payment.appointment.service}`
+                                            ) : null}
                                         </p>
 
                                         {payment.voided_at && (

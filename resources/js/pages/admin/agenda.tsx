@@ -1,4 +1,5 @@
 import NewAppointmentDialog from '@/components/admin/new-appointment-dialog';
+import PackageProgressBadge from '@/components/admin/package-progress-badge';
 import RescheduleAppointmentDialog from '@/components/admin/reschedule-appointment-dialog';
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/admin-layout';
@@ -149,21 +150,33 @@ export default function Agenda({ weekStart, previousWeekStart, nextWeekStart, da
                                                     {appointment.service} · {appointment.duration_minutes} min
                                                 </p>
 
-                                                {appointment.service_value_cents !== null && (
+                                                {appointment.package ? (
                                                     <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
-                                                        >
-                                                            {paymentStatusLabels[appointment.payment_status]}
-                                                        </Badge>
+                                                        <PackageProgressBadge package={appointment.package} />
 
-                                                        {appointment.balance_cents !== null && appointment.balance_cents > 0 && (
+                                                        {appointment.package.balance_cents > 0 && (
                                                             <span className="text-[11px] font-semibold text-[#c98796]">
-                                                                Debe {formatMoney(appointment.balance_cents)}
+                                                                Debe {formatMoney(appointment.package.balance_cents)}
                                                             </span>
                                                         )}
                                                     </div>
+                                                ) : (
+                                                    appointment.service_value_cents !== null && (
+                                                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${paymentStatusBadgeClasses[appointment.payment_status]}`}
+                                                            >
+                                                                {paymentStatusLabels[appointment.payment_status]}
+                                                            </Badge>
+
+                                                            {appointment.balance_cents !== null && appointment.balance_cents > 0 && (
+                                                                <span className="text-[11px] font-semibold text-[#c98796]">
+                                                                    Debe {formatMoney(appointment.balance_cents)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )
                                                 )}
                                             </Link>
 
