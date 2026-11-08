@@ -36,7 +36,7 @@ class AuthenticatedSessionController extends Controller
         // Los administradores trabajan dentro del panel de citas.
         $home = $request->user()->isAdmin()
             ? route('admin.dashboard', absolute: false)
-            : route('dashboard', absolute: false);
+            : route('home', absolute: false);
 
         return redirect()->intended($home);
     }

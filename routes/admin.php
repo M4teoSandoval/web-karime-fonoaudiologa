@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AgendaController;
 use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AppointmentPackageController;
@@ -26,6 +27,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Datos de acceso de la profesional.
+    Route::get('cuenta', [AccountController::class, 'edit'])->name('admin.account.edit');
+    Route::patch('cuenta', [AccountController::class, 'update'])->name('admin.account.update');
+    Route::put('cuenta/contrasena', [AccountController::class, 'updatePassword'])->name('admin.account.password');
 
     // Citas manuales (creadas desde la agenda).
     Route::post('citas', [AppointmentController::class, 'store'])->name('admin.appointments.store');

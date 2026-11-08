@@ -61,14 +61,12 @@ export function Navbar() {
                             DESKTOP CTA
                         ================================================= */}
                         <div className="hidden lg:flex">
-                            {auth.user ? (
+                            {auth.user?.role === 'admin' ? (
                                 <Button
                                     asChild
                                     className="rounded-full bg-[#7d8f7a] px-5 text-white shadow-[0_8px_20px_rgba(125,143,122,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#6f816c] hover:shadow-[0_10px_25px_rgba(125,143,122,0.24)]"
                                 >
-                                    <Link href={auth.user.role === 'admin' ? route('admin.dashboard') : route('dashboard')}>
-                                        {auth.user.role === 'admin' ? 'Panel' : 'Dashboard'}
-                                    </Link>
+                                    <Link href={route('admin.dashboard')}>Panel</Link>
                                 </Button>
                             ) : (
                                 <Link
@@ -121,11 +119,9 @@ export function Navbar() {
                                     </nav>
 
                                     <div className="mt-auto">
-                                        {auth.user ? (
+                                        {auth.user?.role === 'admin' ? (
                                             <Button asChild className="w-full rounded-full bg-[#7d8f7a] py-6 text-white hover:bg-[#6f816c]">
-                                                <Link href={auth.user.role === 'admin' ? route('admin.dashboard') : route('dashboard')}>
-                                                    {auth.user.role === 'admin' ? 'Panel' : 'Dashboard'}
-                                                </Link>
+                                                <Link href={route('admin.dashboard')}>Panel</Link>
                                             </Button>
                                         ) : (
                                             <Link

@@ -18,12 +18,5 @@ Route::post('agendar-cita', [AppointmentRequestController::class, 'store'])
     ->middleware('throttle:10,1')
     ->name('appointments.store');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
-});
-
 require __DIR__.'/admin.php';
-require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

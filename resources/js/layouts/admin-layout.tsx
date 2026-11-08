@@ -1,7 +1,7 @@
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CalendarDays, ClipboardList, Clock, ExternalLink, LayoutGrid, LogOut, Users, X } from 'lucide-react';
+import { CalendarDays, ClipboardList, Clock, ExternalLink, LayoutGrid, LogOut, UserRound, Users, X } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 
 const navItems = [
@@ -36,6 +36,7 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
     }, [flash?.message, flash?.type]);
 
     const isActive = (item: (typeof navItems)[number]) => (item.exact ? url === item.href : url.startsWith(item.href));
+    const isAccountPage = url.startsWith('/admin/cuenta');
 
     return (
         <div className="min-h-screen bg-[#fcf9f7] text-[#373432]">
@@ -61,7 +62,7 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
                     </Link>
 
                     {/* Desktop navigation */}
-                    <nav className="hidden items-center gap-1 md:flex" aria-label="Navegación del panel">
+                    <nav className="hidden items-center gap-1 xl:flex" aria-label="Navegación del panel">
                         {navItems.map((item) => {
                             const Icon = item.icon;
 
@@ -89,11 +90,26 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
                             href="/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hidden items-center gap-2 rounded-full border border-[#eadedf] bg-white px-4 py-2 text-sm font-semibold text-[#706a67] transition-colors duration-200 hover:border-[#7d8f7a] hover:text-[#6f826c] sm:inline-flex"
+                            aria-label="Ver página web"
+                            title="Ver página web"
+                            className="hidden size-[38px] items-center justify-center rounded-full border border-[#eadedf] bg-white text-[#706a67] transition-colors duration-200 hover:border-[#7d8f7a] hover:text-[#6f826c] xl:inline-flex"
                         >
                             <ExternalLink className="size-4" />
-                            Ver página web
                         </a>
+
+                        <Link
+                            href={route('admin.account.edit')}
+                            aria-label="Mi cuenta"
+                            aria-current={isAccountPage ? 'page' : undefined}
+                            title="Mi cuenta"
+                            className={`inline-flex size-[38px] items-center justify-center rounded-full border transition-colors duration-200 ${
+                                isAccountPage
+                                    ? 'border-[#7d8f7a] bg-[#7d8f7a] text-white'
+                                    : 'border-[#eadedf] bg-white text-[#706a67] hover:border-[#7d8f7a] hover:text-[#6f826c]'
+                            }`}
+                        >
+                            <UserRound className="size-4" />
+                        </Link>
 
                         <button
                             type="button"
@@ -107,7 +123,7 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
                 </div>
 
                 {/* Mobile navigation */}
-                <nav className="flex gap-1 overflow-x-auto px-5 pb-3 md:hidden" aria-label="Navegación del panel">
+                <nav className="flex gap-1 overflow-x-auto px-5 pb-3 sm:px-8 xl:hidden" aria-label="Navegación del panel">
                     {navItems.map((item) => {
                         const Icon = item.icon;
 
